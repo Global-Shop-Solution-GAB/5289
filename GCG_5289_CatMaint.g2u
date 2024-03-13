@@ -1,0 +1,491 @@
+Program.Sub.ScreenSU.Start
+Gui.F_Category..Create
+Gui.F_Category..Caption("Inventory Category Maintenance")
+Gui.F_Category..Size(8460,7185)
+Gui.F_Category..MinX(8460)
+Gui.F_Category..MinY(7185)
+Gui.F_Category..Position(0,0)
+Gui.F_Category..BackColor(-2147483633)
+Gui.F_Category..MousePointer(0)
+Gui.F_Category..Event(UnLoad,Unload)
+Gui.F_Category.gsgcCats.Create(GsGridControl)
+Gui.F_Category.gsgcCats.Size(7755,4485)
+Gui.F_Category.gsgcCats.Position(225,1425)
+Gui.F_Category.gsgcCats.Anchor(15)
+Gui.F_Category.txtTopCat.Create(TextBox,"",True,1875,300,0,270,585,True,0,"Arial",8,-2147483643,1)
+Gui.F_Category.txtSubCat.Create(TextBox,"",True,1875,300,0,2460,585,True,0,"Arial",8,-2147483643,1)
+Gui.F_Category.txtChild.Create(TextBox,"",True,1875,300,0,4755,585,True,0,"Arial",8,-2147483643,1)
+Gui.F_Category.cmdAdd.Create(Button)
+Gui.F_Category.cmdAdd.Size(855,375)
+Gui.F_Category.cmdAdd.Position(6900,900)
+Gui.F_Category.cmdAdd.Caption("Add")
+Gui.F_Category.cmdAdd.Event(Click,AddClick)
+Gui.F_Category.cmdAdd.Anchor(13)
+Gui.F_Category.lblParent.Create(Label,"Top Category",True,1935,255,0,270,360,True,0,"Arial",8,-2147483633,0)
+Gui.F_Category.lbl1.Create(Label,"Sub Category",True,1935,255,0,2460,360,True,0,"Arial",8,-2147483633,0)
+Gui.F_Category.lbl2.Create(Label,"Child",True,1935,255,0,4755,360,True,0,"Arial",8,-2147483633,0)
+Gui.F_Category.cmdSave.Create(Button)
+Gui.F_Category.cmdSave.Size(1500,375)
+Gui.F_Category.cmdSave.Position(6480,6060)
+Gui.F_Category.cmdSave.Anchor(15)
+Gui.F_Category.cmdSave.Caption("Save Entries")
+Gui.F_Category.cmdSave.Event(Click,SaveEntries)
+Gui.F_Category.cmdDelete.Create(Button)
+Gui.F_Category.cmdDelete.Size(1500,375)
+Gui.F_Category.cmdDelete.Position(4650,6060)
+Gui.F_Category.cmdDelete.Anchor(15)
+Gui.F_Category.cmdDelete.Caption("Delete Selected")
+Gui.F_Category.cmdDelete.Event(Click,DeleteSelected)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'This project was created for Paragon. It is part of a web integration with Wordpress, website created and upkept by Cazbah.
+'This will directly interact with their version of project 4192, which is attached to the inventory master. This will create a branch of categories for the user to select for inventory that is going to be pushed online to sell.
+'This is merely the maintenance project for the branches, and will be used to populate categories for the user in the inventory master
+'FEQ 11/12/2018
+
+'The username and password assigned for the developer is: 
+'Username: gssimport
+'Password: $Gl0balSh0p-Parag0n!
+
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+F.Intrinsic.Control.CallSub(PopulateSetup)
+
+Gui.F_Category..Show
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.PopulateSetup.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+F.ODBC.Connection!conx.OpenCompanyConnection
+
+'State key: A available, D deleted, N new
+F.Data.DataTable.CreateFromSQL("dtCategories", "conx", "Select AutoNum, Rtrim(LTrim(Category)) as Category, Cat_ID, Rtrim(LTrim(Parent_Cat)) as Parent_Cat, Rtrim(LTrim(UCASE(Parent_Cat))) as ParentKey, Parent_ID, 'A' as State from GCG_5289_Categories", True)
+
+F.ODBC.Connection!conx.Close
+
+'We are going to create teh structure for the grid to make it readable for the user
+F.Data.Dictionary.CreateFromDataTable("dicParent", "dtCategories", "Category", "Parent_Cat")
+F.Data.Dictionary.SetDefaultReturn("dicParent", "*!*")
+
+F.Data.DataTable.AddColumn("dtCategories", "TempCol", "String")
+F.Data.DataTable.FillFromDictionary("dtCategories", "dicParent", "ParentKey", "TempCol")
+
+'These three expression columns are to sort/fill out the tree for the view. A single fill from dictionary column works pretty nicely for up to two subcategories, which is what the customer needs, however it would not take much to add more subcategories
+F.Data.DataTable.AddExpressionColumn("dtCategories", "Main", "String", "IIF([TempCol] = '*!*', [Category], IIF([TempCol] = '0', [Parent_Cat], [TempCol]))")
+F.Data.DataTable.AddExpressionColumn("dtCategories", "Child", "String", "IIF([TempCol] = '*!*', '', IIF([TempCol] = '0', [Category], [Parent_Cat]))")
+F.Data.DataTable.AddExpressionColumn("dtCategories", "Grand", "String", "IIF([TempCol] IN ('*!*', '0'), '', [Category])")
+
+F.Data.DataView.Create("dtCategories", "dvCategories", 22, "", "Main ASC, Child Asc, Grand Asc")
+
+Gui.F_Category.gsgcCats.AddGridviewFromDataview("gridCats", "dtCategories", "dvCategories")
+
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Autonum", "Visible", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Category", "Visible", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Cat_ID", "Visible", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Parent_Cat", "Visible", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "TempCol", "Visible", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "State", "Visible", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "ParentKey", "Visible", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Parent_ID", "Visible", False)
+
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Main", "ReadOnly", True)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Main", "AllowEdit", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Main", "Caption", "Main Category")
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Main", "ReadOnly", True)
+
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Child", "ReadOnly", True)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Child", "AllowEdit", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Child", "Caption", "Sub Category")
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Child", "ReadOnly", True)
+
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Grand", "ReadOnly", True)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Grand", "AllowEdit", False)
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Grand", "Caption", "Child")
+Gui.F_Category.gsgcCats.SetColumnProperty("gridCats", "Grand", "ReadOnly", True)
+
+Gui.F_Category.gsgcCats.MainView("gridCats")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.PopulateSetup.End
+
+Program.Sub.Unload.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+F.Intrinsic.Control.If(V.ODBC.conx.State, =, 1)
+	F.ODBC.Connection!conx.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Unload.End
+
+Program.Sub.AddClick.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+V.Local.sInsert.Declare(String, "")
+V.Local.sSql.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.sParId.Declare(String, "")
+
+Gui.F_Category.gsgcCats.SuspendLayout
+
+F.Intrinsic.Control.If(V.Screen.F_Category!txtTopCat.Text.Trim, =, "")
+	F.Intrinsic.UI.Msgbox("Please select a parent category", "No item created")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Screen.F_Category!txtSubCat.Text.Trim, =, "", "AND", V.Screen.F_Category!txtChild.Text.Trim, <>, "")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+'We need to verify that the hierarchy is there, so we check the top layer, if not created, we create it on the website, and down the line
+F.Intrinsic.String.Build("[Category] = '{0}'", V.Screen.F_Category!txtTopCat.Text.Trim, V.Local.sFilter)
+F.Data.DataView.Create("dtCategories", "dvParent", 22, V.Local.sFilter, "")
+F.Intrinsic.Control.If(V.DataView.dtCategories!dvParent.RowCount, =, 0)
+	'Add row (because of the posibilities of the tree, we are goign to go ahead and save teh parent to the database and get the autonum return to save)
+	F.ODBC.Connection!conx.OpenCompanyConnection
+	F.Intrinsic.String.Build("Insert into GCG_5289_Categories (Category, Parent_Cat, Parent_ID, Cat_ID) Values ('{0}', '0', '0', '-1')", V.Screen.F_Category!txtTopCat.Text.Trim, V.Local.sInsert)
+	F.ODBC.Connection!conx.Execute(V.Local.sInsert)
+	
+	F.Intrinsic.String.Build("Select AutoNum from GCG_5289_Categories where Category = '{0}' and Parent_Cat = '0' and Parent_ID = '0' order by AutoNum desc", V.Screen.F_Category!txtTopCat.Text.Trim, V.Local.sSql)
+	F.ODBC.Connection!conx.ExecuteAndReturn(V.Local.sSql, V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet.Trim, <>, "")
+		F.Intrinsic.String.Split(V.Local.sRet, "!*!", V.Local.sParId)
+	F.Intrinsic.Control.EndIf
+	F.ODBC.Connection!conx.Close
+	F.Data.DataTable.AddRow("dtCategories", "Category", V.Screen.F_Category!txtTopCat.Text.Trim, "Parent_Cat", "0", "State", "N", "TempCol", "*!*", "Autonum", V.Local.sParId, "Parent_ID", "0", "Cat_ID", "-1")
+	
+F.Intrinsic.Control.Else
+	V.Local.sParId.Set(V.DataView.dtCategories!dvParent(0).Autonum!FieldValLong)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("dtCategories", "dvParent")
+
+F.Intrinsic.Control.If(V.Screen.F_Category!txtSubCat.Text.Trim, <>, "")
+
+	F.Intrinsic.String.Build("[Parent_Cat] = '{0}' AND [Category] = '{1}'", V.Screen.F_Category!txtTopCat.Text.Trim, V.Screen.F_Category!txtSubCat.Text.Trim, V.Local.sFilter)
+	F.Data.DataView.Create("dtCategories", "dvChild", 22, V.Local.sFilter, "")
+	F.Intrinsic.Control.If(V.DataView.dtCategories!dvChild.RowCount, =, 0)
+		'Add row
+		F.ODBC.Connection!conx.OpenCompanyConnection
+		F.Intrinsic.String.Build("Insert into GCG_5289_Categories (Category, Parent_Cat, Parent_ID, Cat_ID) Values ('{0}', '{1}', '{2}', '-1')", V.Screen.F_Category!txtSubCat.Text.Trim, V.Screen.F_Category!txtTopCat.Text.Trim, V.Local.sParId.Long, V.Local.sInsert)
+		F.ODBC.Connection!conx.Execute(V.Local.sInsert)
+		
+		F.Intrinsic.String.Build("Select AutoNum from GCG_5289_Categories where Category = '{0}' and Parent_Cat = '{1}' and Parent_ID = '{2}' order by AutoNum desc", V.Screen.F_Category!txtSubCat.Text.Trim, V.Screen.F_Category!txtTopCat.Text.Trim, V.Local.sParId.Long, V.Local.sSql)
+		F.ODBC.Connection!conx.ExecuteAndReturn(V.Local.sSql, V.Local.sRet)
+		F.Intrinsic.Control.If(V.Local.sRet.Trim, <>, "")
+			F.Intrinsic.String.Split(V.Local.sRet, "!*!", V.Local.sRet)
+		F.Intrinsic.Control.EndIf
+		F.ODBC.Connection!conx.Close
+		
+		F.Data.DataTable.AddRow("dtCategories", "Category", V.Screen.F_Category!txtSubCat.Text.Trim, "Parent_Cat", V.Screen.F_Category!txtTopCat.Text.Trim, "State", "N", "TempCol", "0", "Autonum", V.Local.sRet.Long, "Parent_ID", V.Local.sParId.Long, "Cat_ID", "-1")
+	F.Intrinsic.Control.Else
+		V.Local.sRet.Set(V.DataView.dtCategories!dvChild(0).Autonum!FieldValLong)
+	F.Intrinsic.Control.EndIf
+	
+	F.Data.DataView.Close("dtCategories", "dvChild")
+
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Screen.F_Category!txtChild.Text.Trim, <>, "")
+
+	F.Intrinsic.String.Build("[Parent_Cat] = '{0}' AND [Category] = '{1}' AND [TempCol] = '{2}'", V.Screen.F_Category!txtSubCat.Text.Trim, V.Screen.F_Category!txtChild.Text.Trim, V.Screen.F_Category!txtTopCat.Text.Trim, V.Local.sFilter)
+	F.Data.DataView.Create("dtCategories", "dvGrand", 22, V.Local.sFilter, "")
+	F.Intrinsic.Control.If(V.DataView.dtCategories!dvGrand.RowCount, =, 0)
+		'Add row
+		F.Data.DataTable.AddRow("dtCategories", "Category", V.Screen.F_Category!txtChild.Text.Trim, "Parent_Cat", V.Screen.F_Category!txtSubCat.Text.Trim, "TempCol", V.Screen.F_Category!txtTopCat.Text.Trim, "State", "N", "Autonum", "-1", "Parent_ID", V.Local.sRet.Long, "Cat_ID", "-1")
+	F.Intrinsic.Control.EndIf
+	
+	F.Data.DataView.Close("dtCategories", "dvGrand")
+
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.SetSort("dtCategories", "dvCategories", "Main ASC, Child Asc, Grand Asc")
+
+''If conditions are met, we check to see if the entry is already there, if it is not, we add it.
+'F.Intrinsic.String.Build("[Parent]='{0}' AND [Layer1]='{1}' AND [Layer2]='{2}'", V.Screen.F_Category!txtTopCat.Text.Trim, V.Screen.F_Category!txtSubCat.Text.Trim, V.Screen.F_Category!txtChild.Text.Trim, V.Local.sFilter)
+'F.Data.DataView.Create("dtCategories", "dvCheck", 22, V.Local.sFilter, "")
+'F.Intrinsic.Control.If(V.DataView.dtCategories!dvCheck.RowCount, =, 0)
+'	F.Data.DataTable.AddRow("dtCategories", "Parent", V.Screen.F_Category!txtTopCat.Text.Trim, "Layer1", V.Screen.F_Category!txtSubCat.Text.Trim, "Layer2", V.Screen.F_Category!txtChild.Text.Trim, "Deleted", "N", "Autonum", "-1")
+'F.Intrinsic.Control.EndIf
+
+'F.Data.DataView.SetFilter("dtCategories", "dvCategories", "[Deleted] = 'N'")
+
+'F.Data.DataView.Close("dtCategories", "dvCheck")
+
+Gui.F_Category.txtChild.Text("")
+
+Gui.F_Category.gsgcCats.ResumeLayout
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.AddClick.End
+
+Program.Sub.DeleteSelected.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.sLines.Declare(String, "")
+V.Local.iCount.Declare(Long, 0)
+
+Gui.F_Category.gsgcCats.GetSelectedRows("gridCats", V.Local.sRet)
+
+F.Intrinsic.Control.If(V.Local.sRet.Trim, <>, "")
+	F.Intrinsic.String.Split(V.Local.sRet.Trim, "*!*", V.Local.sLines)
+	F.Intrinsic.Control.For(V.Local.iCount, 0, V.Local.sLines.UBound, 1)
+		F.Data.DataTable.SetValue("dtCategories", V.Local.sLines(V.Local.icount).Long, "State", "D")
+	F.Intrinsic.Control.Next(V.Local.iCount)	
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.SetSort("dtCategories", "dvCategories", "Main ASC, Child Asc, Grand Asc")
+F.Data.DataView.SetFilter("dtCategories", "dvCategories", "[State] <> 'D'")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.DeleteSelected.End
+
+Program.Sub.SaveEntries.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.sSql.Declare(String, "")
+
+F.ODBC.Connection!conx.OpenCompanyConnection
+
+Gui.F_Category.gsgcCats.SuspendLayout
+
+'We want to delete all existing entries that were deleted and are still in the background of the process, and then save the ones that were recently added.
+F.Data.DataView.Create("dtCategories", "dvDeletion", 22, "[State] = 'D' and [Autonum] <> '-1'", "")
+F.Intrinsic.Control.If(V.DataView.dtCategories!dvDeletion.RowCount, >, 0)
+	F.Data.DataView.ToString("dtCategories", "dvDeletion", "Autonum", "", "', '", V.Local.sRet)
+	F.Intrinsic.String.Build("Delete from GCG_5289_Categories where Autonum in ('{0}')", V.Local.sRet, V.Local.sSql)
+	F.ODBC.Connection!conx.Execute(V.Local.sSql)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("dtCategories", "dvDeletion")
+
+F.Data.DataView.Create("dtCategories", "dvSaving", 22, "[State] = 'N' and [Autonum] = '-1'", "")
+F.Intrinsic.Control.If(V.DataView.dtCategories!dvSaving.RowCount, >, 0)
+	F.Data.DataView.ToDataTable("dtCategories", "dvSaving", "dtSaveToDB")
+	F.Data.DataTable.RemoveColumn("dtSaveToDB", "State")
+	F.Data.DataTable.RemoveColumn("dtSaveToDB", "Grand")
+	F.Data.DataTable.RemoveColumn("dtSaveToDB", "Child")
+	F.Data.DataTable.RemoveColumn("dtSaveToDB", "Main")
+	F.Data.DataTable.RemoveColumn("dtSaveToDB", "TempCol")
+	F.Data.DataTable.RemoveColumn("dtSaveToDB", "ParentKey")
+	
+	'test
+	F.Data.DataTable.SaveToDB("dtSaveToDB", "conx", "GCG_5289_Categories", "Autonum", 128)
+	F.Data.DataTable.Close("dtSaveToDB")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("dtCategories", "dvSaving")
+F.Data.DataTable.Close("dtCategories")
+F.Data.Dictionary.Close("dicParent")
+
+F.ODBC.Connection!conx.Close
+
+F.Intrinsic.Control.CallSub(CreateCategories)
+
+F.Intrinsic.Control.CallSub(PopulateSetup)
+
+Gui.F_Category.txtChild.Text("")
+Gui.F_Category.txtSubCat.Text("")
+Gui.F_Category.txtTopCat.Text("")
+
+Gui.F_Category.gsgcCats.ResumeLayout
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.SaveEntries.End
+
+Program.Sub.CreateCategories.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sUser.Declare(String, "")
+V.Local.sPassword.Declare(String, "")
+V.Local.sPost.Declare(String, "")
+V.Local.sTest.Declare(String, "")
+V.Local.sReturn.Declare(String, "")
+V.Local.iDrac.Declare(Long, 0)
+V.Local.iID.Declare(Long, 0)
+V.Local.sTemp.Declare(String, "")
+V.Local.sID.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.bExists.Declare(Boolean, False)
+
+F.ODBC.Connection!conx.OpenCompanyConnection
+
+'This part of the project will go ahead and create the categories on WooCommerce in order to retrieve the category IDs and save us some backlash in the later parts of this project
+F.Data.DataTable.CreateFromSQL("dtCateCreate", "conx", "Select AutoNum, Rtrim(LTrim(Category)) as Category, Cat_ID, Rtrim(LTrim(Parent_Cat)) as Parent_Cat, Rtrim(LTrim(UCASE(Parent_Cat))) as ParentKey, Parent_ID from GCG_5289_Categories order by AUTONUM ASC", True)
+
+'Going to rewrite all of this. We have the parent_Id be teh autonumbering of the category, so we just need to make a dictionary from Autonum to Cat_ID, this will give us the cat ID of the parent. In the case that the result from the dictionary is -1, that means that the parent category has not yet been created.
+
+F.Data.Dictionary.CreatefromDataTable("dicParID", "dtCateCreate", "AUTONUM", "CAT_ID")
+F.Data.Dictionary.SetDefaultReturn("dicParID", "0")
+
+F.Data.DataTable.AddColumn("dtCateCreate", "ParCatID", "Long", 0)
+F.Data.DataTable.FillFromDictionary("dtCateCreate", "dicParID", "Parent_ID", "ParCatID")
+
+F.Data.Dictionary.Close("dicParID")
+
+'Cat_ID = -1 means that the category has not been created on the website. ParCatID = -1 means that the parent category has not been created
+F.Data.DataView.Create("dtCateCreate", "dvCreate", 22, "[Cat_ID] = '-1' AND [ParCatID] <> '-1'", "AutoNum ASC")
+F.Data.DataView.ToDataTable("dtCateCreate", "dvCreate", "dtTemp")
+
+F.Data.DataView.Close("dtCateCreate", "dvCreate")
+F.Data.DataTable.Close("dtCateCreate")
+
+F.Intrinsic.Control.If(V.DataTable.dtTemp.RowCount, >, 0)
+	
+'	V.Local.sUser.Set("FEQ")
+'	V.Local.sPassword.Set("n$M$X9RC4s&ya)5XFUZHmHn6")
+		
+	V.Local.sUser.Set("gssimport")
+	V.Local.sPassword.Set("$Gl0balSh0p-Parag0n!")
+		
+	F.Communication.REST.SetProperty("HTTPMethod","POST")
+	F.Communication.REST.SetProperty("User",V.Local.sUser)
+	F.Communication.REST.SetProperty("Password",V.Local.sPassword)
+'	F.Communication.REST.SetProperty("LocalFile","C:\users\fquiroz\Desktop\Categgg.xml")
+	F.Communication.REST.SetProperty("ContentType", "application/json")
+	F.Communication.REST.SetProperty("Accept","text/xml")
+	
+'	F.Intrinsic.Control.AddEventHandler("RESTSTATUS", "ResponseReader")
+	
+	'This is a list of all categories who have not been created but the parent has.
+	F.Intrinsic.Control.For(V.Local.iDrac, 0, V.DataTable.dtTemp.RowCount--)
+
+		'The website reads the input in JSON, so we have to build the POST string to pass through the REST API. The POSTDATA property will be what the REST API reads on the URL set in the POST command.
+		'To create a category, all we need to do is provide a name and the parent ID if it is a child.
+		F.Intrinsic.String.Build("{{0}name{0}: {0}{1}{0}, {0}parent{0}: {0}{2}{0}}", V.Ambient.DblQuote, V.DataTable.dtTemp(V.Local.iDrac).CATEGORY!FieldValTrim, V.DataTable.dtTemp(V.Local.iDrac).ParCatID!FieldValLong, V.Local.sPost)
+		F.Communication.REST.SetProperty("PostData", V.Local.sPost)
+		
+		'The configuration needs to be set. This was provided by Pooja.
+		F.Communication.REST.Config("SSLEnabledProtocols=4032",V.Local.sRet)
+
+'		V.Local.sTest.Set("http://localhost/wordpress/wp-json/wc/v2/products/categories")
+
+		'The post url
+'		V.Local.sTest.Set("https://paragon.wp4.cazbah.us/wp-json/wc/v2/products/categories")
+		
+'		V.Local.sTest.Set("https://dev-pishop.pantheonsite.io/wp-json/wc/v3/products/categories")
+		V.Local.sTest.Set("https://live-pishop.pantheonsite.io/wp-json/wc/v3/products/categories")
+		
+		F.Communication.REST.Post(V.Local.sTest)
+		
+		'This line was needed to be able to read the properties after the post was made
+		F.Communication.REST.DoEvents()
+		F.Communication.REST.Attr("id", V.Local.sID)
+		'TransferredData returns the body of the resulting post
+		F.Communication.REST.ReadProperty("TransferredData", V.Local.sTemp)
+		
+		'If the post is unsuccessful, OCTSRS Crashes, so we can assume that it was successful if we got to this point
+		F.Intrinsic.String.Split(V.Local.sTemp, ",", V.Local.sTemp)
+		F.Intrinsic.Control.If(V.Local.sTemp(0), <>, "")
+			F.intrinsic.String.Split(V.Local.sTemp(0), ":", V.Local.sTemp)
+			F.Intrinsic.Control.If(V.Local.sTemp(1).Long, <>, 0)
+				F.Data.DataTable.SetValue("dtTemp", V.Local.iDrac, "Cat_ID", V.Local.sTemp(1).Long)				
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			'Something happened and it didnt get pulled or get created
+			
+		F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.Next(V.Local.iDrac)
+			
+	F.Data.Dictionary.CreateFromDataTable("dicCatId", "dtTemp", "Autonum", "Cat_ID")
+	F.Data.Dictionary.SetDefaultReturn("dicCatId", "-1")
+	F.Data.DataTable.AddColumn("dtTemp", "TempCatID", "Long")
+	
+	F.Data.DataTable.FillFromDictionary("dtTemp", "dicCatId", "Autonum", "TempCatID")
+	
+	F.Data.Dictionary.Close("dicCatId")
+	
+	F.Data.DataTable.AddExpressionColumn("dtTemp", "RealCatID", "Long", "IIF([CAT_ID] = '-1', [TempCatID], [Cat_ID])")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicC", "dtTemp", "Autonum", "RealCatID")
+	F.Data.Dictionary.SetDefaultReturn("dicC", -1)
+	
+	F.Data.DataTable.FillFromDictionary("dtTemp", "dicC", "Autonum", "Cat_ID")
+	
+	'Then we can do the save to db query, just remove the additional columns created
+	F.Data.DataTable.RemoveColumn("dtTemp", "ParentKey")
+	F.Data.DataTable.RemoveColumn("dtTemp", "RealCatID")
+	F.Data.DataTable.RemoveColumn("dtTemp", "TempCatID")
+	F.Data.DataTable.RemoveColumn("dtTemp", "ParCatID")
+	
+	F.Data.DataTable.SaveToDB("dtTemp", "conx", "GCG_5289_Categories", "Autonum", 256)
+	
+	F.Data.Dictionary.Close("dicC")
+	
+	F.Data.DataTable.Close("dtTemp")
+
+	F.ODBC.Connection!conx.Close
+
+	F.Intrinsic.Control.CallSub(CreateCategories)
+	
+F.Intrinsic.Control.Else
+
+	F.Data.DataTable.Close("dtTemp")
+	
+	F.ODBC.Connection!conx.Close
+
+F.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.CreateCategories.End
+
+Program.Sub.ResponseReader.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+'This subrioutine was never used. Part of the stuff I tested to try and make stuff work
+F.Intrinsic.Variable.AddRV("sSuccess", "YES")
+'F.Intrinsic.UI.Msgbox("this is a stop")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.ResponseReader.End
