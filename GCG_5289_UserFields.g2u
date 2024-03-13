@@ -1,0 +1,1334 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.frmUserFields..create(BaseForm)
+Gui.frmUserFields..caption("Inventory Extra User Fields")
+Gui.frmUserFields..size(15270,10515)
+Gui.frmUserFields..position(0,0)
+Gui.frmUserFields..event(UnLoad,frmTitles_UnLoad)
+Gui.frmUserFields..forecolor(0)
+Gui.frmUserFields..fontstyle(False,False,False,False,False)
+Gui.frmUserFields..BackColor(-2147483633)
+Gui.frmUserFields..minbutton(False)
+Gui.frmUserFields..mousepointer(0)
+Gui.frmUserFields..sizeable(True)
+Gui.frmUserFields..MinX(0)
+Gui.frmUserFields..MinY(0)
+Gui.frmUserFields..MaxButton(False)
+Gui.frmUserFields..AlwaysOnTop(False)
+Gui.frmUserFields..FontName("Tahoma")
+Gui.frmUserFields..FontSize(8.25)
+Gui.frmUserFields..ControlBox(True)
+Gui.frmUserFields..Moveable(True)
+Gui.frmUserFields..ShowInTaskBar(True)
+Gui.frmUserFields..TitleBar(True)
+Gui.frmUserFields.GsGCUserFields.Create(GsGridControl)
+Gui.frmUserFields.GsGCUserFields.Size(8235,9810)
+Gui.frmUserFields.GsGCUserFields.Position(30,0)
+Gui.frmUserFields.GsGCUserFields.Anchor(7)
+Gui.frmUserFields.GsGCUserFields.Event(RowCellClick,GsGCTitles_RowCellClick)
+Gui.frmUserFields.GsGCUserFields.Enabled(True)
+Gui.frmUserFields.GsGCUserFields.Visible(True)
+Gui.frmUserFields.GsGCUserFields.Zorder(0)
+Gui.frmUserFields.cmdSave.Create(Button)
+Gui.frmUserFields.cmdSave.Size(855,345)
+Gui.frmUserFields.cmdSave.Position(7410,9840)
+Gui.frmUserFields.cmdSave.Anchor(6)
+Gui.frmUserFields.cmdSave.Caption("Save")
+Gui.frmUserFields.cmdSave.Event(Click,cmdSave_Click)
+Gui.frmUserFields.cmdSave.Enabled(True)
+Gui.frmUserFields.cmdSave.Visible(True)
+Gui.frmUserFields.cmdSave.Zorder(0)
+Gui.frmUserFields.cmdSave.FontName("Tahoma")
+Gui.frmUserFields.cmdSave.FontSize(8.25)
+Gui.frmUserFields.frameWeb.Create(Frame)
+Gui.frmUserFields.frameWeb.Size(6555,9690)
+Gui.frmUserFields.frameWeb.Position(8370,75)
+Gui.frmUserFields.frameWeb.Caption("Website Information")
+Gui.frmUserFields.frameWeb.Enabled(True)
+Gui.frmUserFields.frameWeb.Visible(True)
+Gui.frmUserFields.frameWeb.Zorder(0)
+Gui.frmUserFields.frameWeb.FontName("Tahoma")
+Gui.frmUserFields.frameWeb.FontSize(8.25)
+Gui.frmUserFields.ddlParent.Create(DropDownList)
+Gui.frmUserFields.ddlParent.Size(1725,300)
+Gui.frmUserFields.ddlParent.Position(75,4815)
+Gui.frmUserFields.ddlParent.Parent("frameWeb")
+Gui.frmUserFields.ddlParent.Event(Click,ParentChange)
+Gui.frmUserFields.ddlParent.Enabled(False)
+Gui.frmUserFields.ddlParent.Visible(True)
+Gui.frmUserFields.ddlParent.Zorder(0)
+Gui.frmUserFields.ddlParent.FontName("Tahoma")
+Gui.frmUserFields.ddlParent.FontSize(8.25)
+Gui.frmUserFields.ddlLayer1.Create(DropDownList)
+Gui.frmUserFields.ddlLayer1.Enabled(False)
+Gui.frmUserFields.ddlLayer1.Size(1725,330)
+Gui.frmUserFields.ddlLayer1.Position(1935,4815)
+Gui.frmUserFields.ddlLayer1.Parent("frameWeb")
+Gui.frmUserFields.ddlLayer1.Event(Click,Layer1Change)
+Gui.frmUserFields.ddlLayer1.Visible(True)
+Gui.frmUserFields.ddlLayer1.Zorder(0)
+Gui.frmUserFields.ddlLayer1.FontName("Tahoma")
+Gui.frmUserFields.ddlLayer1.FontSize(8.25)
+Gui.frmUserFields.ddlLayer2.Create(DropDownList)
+Gui.frmUserFields.ddlLayer2.Enabled(False)
+Gui.frmUserFields.ddlLayer2.Size(1725,330)
+Gui.frmUserFields.ddlLayer2.Position(3795,4815)
+Gui.frmUserFields.ddlLayer2.Parent("frameWeb")
+Gui.frmUserFields.ddlLayer2.Event(Click,Layer2Change)
+Gui.frmUserFields.ddlLayer2.Visible(True)
+Gui.frmUserFields.ddlLayer2.Zorder(0)
+Gui.frmUserFields.ddlLayer2.FontName("Tahoma")
+Gui.frmUserFields.ddlLayer2.FontSize(8.25)
+Gui.frmUserFields.txtPart.Create(TextBox,"",True,2460,300,0,150,690,True,0,"Arial",8,-2147483643,1)
+Gui.frmUserFields.txtPart.Parent("frameWeb")
+Gui.frmUserFields.lbl1.Create(Label,"Part Number",True,1935,255,0,150,480,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmUserFields.lbl1.Parent("frameWeb")
+Gui.frmUserFields.lbl1.BorderStyle(0)
+Gui.frmUserFields.lbl2.Create(Label,"Parent Category",True,1935,255,0,60,4590,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmUserFields.lbl2.Parent("frameWeb")
+Gui.frmUserFields.lbl2.BorderStyle(0)
+Gui.frmUserFields.lbl3.Create(Label,"Sub Category",True,1515,255,0,1905,4590,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmUserFields.lbl3.Parent("frameWeb")
+Gui.frmUserFields.lbl3.BorderStyle(0)
+Gui.frmUserFields.lbl4.Create(Label,"Child",True,1440,255,0,3780,4590,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmUserFields.lbl4.Parent("frameWeb")
+Gui.frmUserFields.lbl4.BorderStyle(0)
+Gui.frmUserFields.txtName.Create(TextBox,"",True,2460,300,0,2910,690,True,0,"Arial",8,-2147483643,1)
+Gui.frmUserFields.txtName.Parent("frameWeb")
+Gui.frmUserFields.lbl5.Create(Label,"Online Part Name",True,1935,255,0,2910,480,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmUserFields.lbl5.Parent("frameWeb")
+Gui.frmUserFields.lbl5.BorderStyle(0)
+Gui.frmUserFields.txtDescription.Create(TextboxM)
+Gui.frmUserFields.txtDescription.Size(6255,2970)
+Gui.frmUserFields.txtDescription.Position(150,1365)
+Gui.frmUserFields.txtDescription.Parent("frameWeb")
+Gui.frmUserFields.txtDescription.Enabled(True)
+Gui.frmUserFields.txtDescription.Visible(True)
+Gui.frmUserFields.txtDescription.Zorder(0)
+Gui.frmUserFields.txtDescription.FontName("Tahoma")
+Gui.frmUserFields.txtDescription.FontSize(8.25)
+Gui.frmUserFields.lblDesc.Create(Label,"Part Description",True,1935,255,0,150,1125,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmUserFields.lblDesc.Parent("frameWeb")
+Gui.frmUserFields.lblDesc.BorderStyle(0)
+Gui.frmUserFields.cmdAdd.Create(Button)
+Gui.frmUserFields.cmdAdd.Size(855,375)
+Gui.frmUserFields.cmdAdd.Position(5610,4785)
+Gui.frmUserFields.cmdAdd.Parent("frameWeb")
+Gui.frmUserFields.cmdAdd.Caption("Add")
+Gui.frmUserFields.cmdAdd.Event(Click,CategoryAdd)
+Gui.frmUserFields.cmdAdd.Enabled(True)
+Gui.frmUserFields.cmdAdd.Visible(True)
+Gui.frmUserFields.cmdAdd.Zorder(0)
+Gui.frmUserFields.cmdAdd.FontName("Tahoma")
+Gui.frmUserFields.cmdAdd.FontSize(8.25)
+Gui.frmUserFields.gsgcCategories.Create(GsGridControl)
+Gui.frmUserFields.gsgcCategories.Size(6315,1410)
+Gui.frmUserFields.gsgcCategories.Position(120,5310)
+Gui.frmUserFields.gsgcCategories.Parent("frameWeb")
+Gui.frmUserFields.gsgcCategories.Enabled(True)
+Gui.frmUserFields.gsgcCategories.Visible(True)
+Gui.frmUserFields.gsgcCategories.Zorder(0)
+Gui.frmUserFields.cmdDelete.Create(Button)
+Gui.frmUserFields.cmdDelete.Size(855,375)
+Gui.frmUserFields.cmdDelete.Position(5610,6795)
+Gui.frmUserFields.cmdDelete.Parent("frameWeb")
+Gui.frmUserFields.cmdDelete.Caption("Delete")
+Gui.frmUserFields.cmdDelete.Event(Click,CategoryDelete)
+Gui.frmUserFields.cmdDelete.Enabled(True)
+Gui.frmUserFields.cmdDelete.Visible(True)
+Gui.frmUserFields.cmdDelete.Zorder(0)
+Gui.frmUserFields.cmdDelete.FontName("Tahoma")
+Gui.frmUserFields.cmdDelete.FontSize(8.25)
+Gui.frmUserFields.cmdDeleteImage.Create(Button)
+Gui.frmUserFields.cmdDeleteImage.Size(855,375)
+Gui.frmUserFields.cmdDeleteImage.Position(5610,9195)
+Gui.frmUserFields.cmdDeleteImage.Parent("frameWeb")
+Gui.frmUserFields.cmdDeleteImage.Caption("Delete")
+Gui.frmUserFields.cmdDeleteImage.Event(Click,ImageDelete)
+Gui.frmUserFields.cmdDeleteImage.Enabled(True)
+Gui.frmUserFields.cmdDeleteImage.Visible(True)
+Gui.frmUserFields.cmdDeleteImage.Zorder(0)
+Gui.frmUserFields.cmdDeleteImage.FontName("Tahoma")
+Gui.frmUserFields.cmdDeleteImage.FontSize(8.25)
+Gui.frmUserFields.gsgcImages.Create(GsGridControl)
+Gui.frmUserFields.gsgcImages.Size(6315,1185)
+Gui.frmUserFields.gsgcImages.Position(120,7950)
+Gui.frmUserFields.gsgcImages.Parent("frameWeb")
+Gui.frmUserFields.gsgcImages.Enabled(True)
+Gui.frmUserFields.gsgcImages.Visible(True)
+Gui.frmUserFields.gsgcImages.Zorder(0)
+Gui.frmUserFields.txtImage.Create(TextBox,"",True,4860,300,0,150,7530,True,0,"Arial",8,-2147483643,1)
+Gui.frmUserFields.txtImage.Parent("frameWeb")
+Gui.frmUserFields.txtImage.Locked(True)
+Gui.frmUserFields.lbl6.Create(Label,"Images",True,1935,255,0,150,7290,True,0,"Arial",8,-2147483633,0,0)
+Gui.frmUserFields.lbl6.Parent("frameWeb")
+Gui.frmUserFields.lbl6.BorderStyle(0)
+Gui.frmUserFields.cmdAddImage.Create(Button)
+Gui.frmUserFields.cmdAddImage.Size(855,375)
+Gui.frmUserFields.cmdAddImage.Position(5610,7500)
+Gui.frmUserFields.cmdAddImage.Parent("frameWeb")
+Gui.frmUserFields.cmdAddImage.Caption("Add")
+Gui.frmUserFields.cmdAddImage.Event(Click,ImageAdd)
+Gui.frmUserFields.cmdAddImage.Enabled(True)
+Gui.frmUserFields.cmdAddImage.Visible(True)
+Gui.frmUserFields.cmdAddImage.Zorder(0)
+Gui.frmUserFields.cmdAddImage.FontName("Tahoma")
+Gui.frmUserFields.cmdAddImage.FontSize(8.25)
+Gui.frmUserFields.cmdImageBrowse.Create(Button)
+Gui.frmUserFields.cmdImageBrowse.Size(375,375)
+Gui.frmUserFields.cmdImageBrowse.Position(5070,7500)
+Gui.frmUserFields.cmdImageBrowse.Parent("frameWeb")
+Gui.frmUserFields.cmdImageBrowse.Caption("^")
+Gui.frmUserFields.cmdImageBrowse.Event(Click,ImageBrowser)
+Gui.frmUserFields.cmdImageBrowse.Enabled(True)
+Gui.frmUserFields.cmdImageBrowse.Visible(True)
+Gui.frmUserFields.cmdImageBrowse.Zorder(0)
+Gui.frmUserFields.cmdImageBrowse.FontName("Tahoma")
+Gui.frmUserFields.cmdImageBrowse.FontSize(8.25)
+Gui.frmValues..Create(BaseForm)
+Gui.frmValues..Size(6150,5430)
+Gui.frmValues..MinX(0)
+Gui.frmValues..MinY(0)
+Gui.frmValues..Position(0,0)
+Gui.frmValues..BackColor(-2147483633)
+Gui.frmValues..MousePointer(0)
+Gui.frmValues..Event(UnLoad,frmValues_UnLoad)
+Gui.frmValues..Caption("Select a Value:")
+Gui.frmValues..AlwaysOnTop(False)
+Gui.frmValues..FontName("Tahoma")
+Gui.frmValues..FontSize(8.25)
+Gui.frmValues..ControlBox(True)
+Gui.frmValues..MaxButton(True)
+Gui.frmValues..MinButton(True)
+Gui.frmValues..Moveable(True)
+Gui.frmValues..Sizeable(True)
+Gui.frmValues..ShowInTaskBar(True)
+Gui.frmValues..TitleBar(True)
+Gui.frmValues.GsGCValues.Create(GsGridControl)
+Gui.frmValues.GsGCValues.Size(5970,5115)
+Gui.frmValues.GsGCValues.Position(30,15)
+Gui.frmValues.GsGCValues.Event(RowCellClick,GsGCValues_RowCellClick)
+Gui.frmValues.GsGCValues.Enabled(True)
+Gui.frmValues.GsGCValues.Visible(True)
+Gui.frmValues.GsGCValues.Zorder(0)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+	V.Global.sPart.Declare(String, "")
+	V.Global.sLoc.Declare(String, "")
+	V.Global.iRowIndex.Declare(Long, 0)
+	V.Global.bEdit.Declare(Boolean, False)
+	V.Global.iCatId.Declare(Long, 0)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+			
+	'Unsure of original coder. Modified by FEQ on 11/15. This original project was titled GAB_4912_Titles.g2u. This was modified to hold a bit more information for customer Paragon.
+	'This will be part of a web integration. Project number 5289. The implementation added to this project is to accomodate three layers of categories for inventory parts, used when inventory is pushed into the website.
+	V.Local.sIcon.Declare(String, "")
+
+	F.Intrinsic.String.Build("{0}\gss2.ico",V.Caller.GasDir,V.Local.sIcon)
+	Gui.frmUserFields..Icon(V.Local.sIcon)
+	Gui.frmValues..Icon(V.Local.sIcon)
+	Gui.frmUserFields.cmdSave.Enabled(False)
+		
+'	'Testing the category stuff *************************	
+'	
+'	F.ODBC.Connection!con.OpenCompanyConnection
+'	F.Intrinsic.Control.CallSub(TableForDDLS)
+'	Gui.frmUserFields..Show
+'	
+'	'***************************************************
+	
+	F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+		'Inventory Master (Script 3 Button)
+		F.Intrinsic.Control.Case(10120)
+			V.Passed.000070.Set("Inv Extra UF")
+		
+		F.Intrinsic.Control.Case(10230)
+			F.Intrinsic.Control.If(V.Passed.000007,=,"")
+				F.Intrinsic.UI.Msgbox("Please Select a Part Number.","Inv Extra User Fields")
+				F.Intrinsic.Control.End
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.If(V.Caller.Switches,=,"O")
+				V.Global.bEdit.Set(True)
+				Gui.frmUserFields.cmdSave.Enabled(True)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.String.GSSPartString(V.Passed.000007,V.Passed.000008,V.Global.sPart)
+			V.Global.sLoc.Set(V.Passed.000009.String)
+						
+			F.Intrinsic.Control.CallSub(SetContextMenus)
+			F.Intrinsic.Control.CallSub(LoadUserFields)
+			Gui.frmUserFields..Show
+					
+		'Supply And Demand (Script 2 Button)
+		F.Intrinsic.Control.Case(14045)
+			V.Passed.000190.Set("Inv Extra UF")
+		
+		F.Intrinsic.Control.Case(14080)
+			F.Intrinsic.Control.If(V.Passed.000003,=,"")
+				F.Intrinsic.UI.Msgbox("Please Select a Part Number.","Inv Extra User Fields")
+				F.Intrinsic.Control.End
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.If(V.Caller.Switches,=,"M")
+				V.Global.bEdit.Set(True)
+				Gui.frmUserFields.cmdSave.Enabled(True)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.String.GSSPartString(V.Passed.000003,V.Passed.000099,V.Global.sPart)
+			V.Global.sLoc.Set(V.Passed.000004)
+			F.Intrinsic.Control.CallSub(SetContextMenus)
+			F.Intrinsic.Control.CallSub(LoadUserFields)
+			Gui.frmUserFields..Show
+
+	F.Intrinsic.Control.EndSelect
+	
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.frmTitles_UnLoad.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+
+	F.Intrinsic.Control.End
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.frmTitles_UnLoad.End
+
+Program.Sub.SetContextMenus.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+	
+	Gui.frmUserFields..ContextMenuCreate("ctxTitles")
+	Gui.frmUserFields.GsGCUserFields.ContextMenuAttach("ctxTitles")
+	Gui.frmUserFields..ContextMenuAddItem("ctxTitles","Refresh",0,"Refresh")
+	Gui.frmUserFields..ContextMenuAddItem("ctxTitles","Export",0,"Export")
+	Gui.frmUserFields..ContextMenuSetItemEventHandler("ctxTitles","Refresh","LoadUserFields")
+	Gui.frmUserFields..ContextMenuSetItemEventHandler("ctxTitles","Export","MenuClickExport")
+	
+	Gui.frmValues..ContextMenuCreate("ctxValues")
+	Gui.frmValues.GsGCValues.ContextMenuAttach("ctxValues")
+	Gui.frmValues..ContextMenuAddItem("ctxValues","Export",0,"Export")
+	Gui.frmValues..ContextMenuSetItemEventHandler("ctxValues","Export","MenuClickExport")
+		
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.SetContextMenus.End
+
+Program.Sub.MenuClickExport.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+	
+	V.Local.sFileExport.Declare(String, "")
+	V.Local.bExcel.Declare(Boolean, False)
+	V.Local.bFileLocked.Declare(Boolean, False)
+	V.Local.sMsg.Declare(String, "")
+	V.Local.sForm.Declare(String, "")
+	V.Local.sControl.Declare(String, "")
+	
+	F.Intrinsic.Control.SelectCase(V.Args.MenuName)
+		F.Intrinsic.Control.Case("CTXTITLES")
+			V.Local.sForm.Set("frmUserFields")
+			V.Local.sControl.Set("GsGCUserFields")
+		F.Intrinsic.Control.Case("CTXVALUES")
+			V.Local.sForm.Set("frmValues")
+			V.Local.sControl.Set("GsGCValues")
+	F.Intrinsic.Control.EndSelect
+
+	F.Automation.MSExcel.CheckPresence(V.Local.bExcel)
+	F.Intrinsic.Control.If(V.Local.bExcel)
+		F.Intrinsic.String.Build("{0}\GCG_5289_UF_{1}_Export.xlsx",V.Caller.LocalGssTempDir,V.Local.sControl,V.Local.sFileExport)
+		F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+		F.Intrinsic.Control.If(V.Local.bFileLocked)
+			F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+			F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+		F.Intrinsic.Control.Else
+			Gui.[V.Local.sForm].[V.Local.sControl].Export(V.Local.sFileExport,"xlsx")
+			F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("{0}\GCG_5289_UF_{1}_Export.csv",V.Caller.LocalGssTempDir,V.Local.sControl,V.Local.sFileExport)
+		F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+		F.Intrinsic.Control.If(V.Local.bFileLocked)
+			F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+			F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+		F.Intrinsic.Control.Else
+			Gui.[V.Local.sForm].[V.Local.sControl].Export(V.Local.sFileExport,"csv")
+		F.Intrinsic.Control.EndIf
+		F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.MenuClickExport.End
+
+Program.Sub.LoadUserFields.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+
+	V.Local.iCnt.Declare(Long, 0)
+	V.Local.iRow.Declare(Long, 0)
+	V.Local.sUserField.Declare(String, "")
+	V.Local.sTitle.Declare(String, "")
+	V.Local.sSQL.Declare(String, "")
+	
+	F.Intrinsic.Control.If(V.DataTable.dtUserFields.Exists)
+		F.Data.DataTable.Close("dtUserFields")
+		F.Data.DataTable.Close("dtUFVals")
+	F.Intrinsic.Control.EndIf
+	
+	F.ODBC.Connection!con.OpenCompanyConnection(300)
+	
+	F.Data.DataTable.Create("dtUserFields",True)
+	F.Data.DataTable.AddColumn("dtUserFields","UserField",String,"")
+	F.Data.DataTable.AddColumn("dtUserFields","Title",String,"")
+	F.Data.DataTable.AddColumn("dtUserFields","Value",String,"",50)
+	F.Data.DataTable.AddColumn("dtUserFields","Value_BRW",String,"Browse")
+	
+	'Load Titles for User Fields
+	F.Data.DataTable.CreateFromSQL("dtTitles","con","Select * From GCG_5289_TITLES Where TID = 1",True)
+	F.Intrinsic.Control.For(V.Local.iCnt,1,30,1)
+		F.Intrinsic.Math.Sub(V.Local.iCnt,1,V.Local.iRow)
+		F.Intrinsic.String.Build("USER{0}",V.Local.iCnt,V.Local.sUserField)
+		F.Data.DataTable.AddRow("dtUserFields","UserField",V.Local.sUserField)
+		F.Intrinsic.Control.If(V.DataTable.dtTitles(0).[V.Local.sUserField]!FieldValTrim,=,"")
+			F.Data.DataTable.SetValue("dtUserFields",V.Local.iRow,"Title",V.Local.sUserField)
+		F.Intrinsic.Control.Else
+			F.Data.DataTable.SetValue("dtUserFields",V.Local.iRow,"Title",V.DataTable.dtTitles(0).[V.Local.sUserField]!FieldValTrim)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+	
+	F.Data.DataTable.Close("dtTitles")
+	
+	'Load Values
+	F.Intrinsic.String.Build("Select * From GCG_5289_USER_FIELDS Where Part = '{0}' And Location = '{1}'",V.Global.sPart.Trim,V.Global.sLoc.Trim,V.Local.sSQL)
+	F.Data.DataTable.CreateFromSQL("dtUFVals","con",V.Local.sSQL,True)
+	F.Intrinsic.Control.If(V.DataTable.dtUFVals.RowCount,<>,0)
+		F.Intrinsic.Control.For(V.Local.iCnt,1,30,1)
+			F.Intrinsic.Math.Sub(V.Local.iCnt,1,V.Local.iRow)
+			F.Intrinsic.String.Build("USER{0}",V.Local.iCnt,V.Local.sUserField)
+			F.Data.DataTable.SetValue("dtUserFields",V.Local.iRow,"Value",V.DataTable.dtUFVals(0).[V.Local.sUserField]!FieldValTrim)
+		F.Intrinsic.Control.Next(V.Local.iCnt)
+		
+		Gui.frmUserFields.txtName.Text(V.DataTable.dtUFVals(0).PartName!FieldValTrim)
+		Gui.frmUserFields.txtDescription.Text(V.DataTable.dtUFVals(0).PartDesc!FieldValTrim)		
+		
+	F.Intrinsic.Control.EndIf
+	
+	Gui.frmUserFields.GsGCUserFields.AddGridviewFromDatatable("gvUserFields","dtUserFields")
+	Gui.frmUserFields.GsGCUserFields.SuspendLayout()
+	Gui.frmUserFields.GsGCUserFields.SetGridViewProperty("gvUserFields","MultiSelect",True)
+	Gui.frmUserFields.GsGCUserFields.SetGridViewProperty("gvUserFields","AllowSort",False)
+	Gui.frmUserFields.GsGCUserFields.SetGridViewProperty("gvUserFields","AllowFilter",True)
+	Gui.frmUserFields.GsGCUserFields.SetGridViewProperty("gvUserFields","OptionsDetailShowDetailTabs",False)
+	Gui.frmUserFields.GsGCUserFields.SetGridViewProperty("gvUserFields","OptionsViewShowGroupPanel",False)
+	Gui.frmUserFields.GsGCUserFields.SetGridViewProperty("gvUserFields","Enableappearanceoddrow",True)
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","UserField","Visible",False)
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","UserField","ShowCaption",False)
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Title","ShowCaption",False)
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value_BRW","ShowCaption",False)
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value_BRW","Icon","Browse")
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","UserField","Caption","User Field")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Title","Caption","Title")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value","Caption","Value")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value_BRW","Caption","Browser")
+	
+	F.Intrinsic.Control.If(V.Global.bEdit)
+		Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","UserField","AllowEdit",False)
+		Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Title","AllowEdit",False)
+		Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value","AllowEdit",True)
+		Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value_BRW","AllowEdit",False)
+		
+		Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value","ReadOnly",False)
+	F.Intrinsic.Control.Else
+		Gui.frmUserFields.GsGCUserFields.SetGridViewProperty("gvUserFields","Editable",False)
+		Gui.frmUserFields.GsGCUserFields.SetGridViewProperty("gvUserFields","ReadOnly",True)
+	F.Intrinsic.Control.EndIf
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","UserField","MinWidth","200")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Title","MinWidth","200")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value","MinWidth","300")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value_BRW","MinWidth","15")
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value","MaxLength",50)
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","UserField","HeaderFontBold",True)
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Title","HeaderFontBold",True)
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value","HeaderFontBold",True)
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value_BRW","HeaderFontBold",True)
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","UserField","CellFontBold",True)
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Title","CellFontBold",True)
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","UserField","HeaderHAlignment","Center")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Title","HeaderHAlignment","Center")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value","HeaderHAlignment","Center")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value_BRW","HeaderHAlignment","Center")
+	
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","UserField","CellHAlignment","Center")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Title","CellHAlignment","Center")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value","CellHAlignment","Center")
+	Gui.frmUserFields.GsGCUserFields.SetColumnProperty("gvUserFields","Value_BRW","CellHAlignment","Center")
+	
+	Gui.frmUserFields.GsGCUserFields.ResumeLayout()
+	Gui.frmUserFields.GsGCUserFields.MainView("gvUserFields")
+	
+	F.Intrinsic.Control.CallSub(TableForDDLS)
+
+	
+	Gui.frmUserFields.txtPart.Text(V.Global.sPart)
+	
+	F.Intrinsic.Control.CallSub(WebCheck)
+	
+	F.ODBC.Connection!con.Close
+					
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.LoadUserFields.End
+
+Program.Sub.GsGCTitles_RowCellClick.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+	
+	V.Local.sUserField.Declare(String, "")
+	V.Local.sTitle.Declare(String, "")
+	V.Local.sSQL.Declare(String, "")
+	V.Local.sCaption.Declare(String, "")
+	
+	F.Intrinsic.Control.If(V.Global.bEdit,=,False)
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+
+	F.ODBC.Connection!con.OpenCompanyConnection(300)
+	
+	F.Intrinsic.Control.SelectCase(V.Args.Column)
+		F.Intrinsic.Control.Case("Value_BRW")
+			F.Intrinsic.Control.If(V.DataTable.dtValues.Exists)
+				F.Data.DataTable.Close("dtValues")
+			F.Intrinsic.Control.EndIf
+			V.Global.iRowIndex.Set(V.Args.RowIndex)
+			Gui.frmUserFields.GsGCUserFields.GetCellValueByColumnName("gvUserFields","UserField",V.Global.iRowIndex,V.Local.sUserField)
+			Gui.frmUserFields.GsGCUserFields.GetCellValueByColumnName("gvUserFields","Title",V.Global.iRowIndex,V.Local.sTitle)
+			F.Intrinsic.String.Build("Select VID,RTrim(USER_FIELD) AS USER_FIELD, RTrim(VALUE) AS VALUE From GCG_5289_VALUES Where USER_FIELD = '{0}' Order By VALUE;",V.Local.sUserField,V.Local.sSQL)
+			F.Data.DataTable.CreateFromSQL("dtValues","con",V.Local.sSQL,True)
+			
+			Gui.frmValues.GsGCValues.AddGridviewFromDatatable("gvValues","dtValues")
+			Gui.frmValues.GsGCValues.SuspendLayout()
+			Gui.frmValues.GsGCValues.SetGridViewProperty("gvValues","MultiSelect",True)
+			Gui.frmValues.GsGCValues.SetGridViewProperty("gvValues","Editable",False)
+			Gui.frmValues.GsGCValues.SetGridViewProperty("gvValues","ReadOnly",True)
+			Gui.frmValues.GsGCValues.SetGridViewProperty("gvValues","AllowSort",False)
+			Gui.frmValues.GsGCValues.SetGridViewProperty("gvValues","AllowFilter",True)
+			Gui.frmValues.GsGCValues.SetGridViewProperty("gvValues","OptionsDetailShowDetailTabs",False)
+			Gui.frmValues.GsGCValues.SetGridViewProperty("gvValues","OptionsViewShowGroupPanel",False)
+			Gui.frmValues.GsGCValues.SetGridViewProperty("gvValues","Enableappearanceoddrow",True)
+			
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VID","Visible",False)
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","USER_FIELD","Visible",False)
+			
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VID","Caption","VID")
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","USER_FIELD","Caption","User Field")
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VALUE","Caption","Values")
+			
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VID","MinWidth","45")
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","USER_FIELD","MinWidth","45")
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VALUE","MinWidth","250")
+			
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VALUE","MaxLength",50)
+			
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VID","HeaderFontBold",True)
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","USER_FIELD","HeaderFontBold",True)
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VALUE","HeaderFontBold",True)
+			
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VID","HeaderHAlignment","Center")
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","USER_FIELD","HeaderHAlignment","Center")
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VALUE","HeaderHAlignment","Center")
+			
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VID","CellHAlignment","Center")
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","USER_FIELD","CellHAlignment","Center")
+			Gui.frmValues.GsGCValues.SetColumnProperty("gvValues","VALUE","CellHAlignment","Center")
+			
+			Gui.frmValues.GsGCValues.ResumeLayout()
+			Gui.frmValues.GsGCValues.MainView("gvValues")
+			
+			F.Intrinsic.Control.If(V.Local.sTitle.Trim,=,"")
+				F.Intrinsic.String.Build("Select a Value: {0}",V.Local.sUserField,V.Local.sCaption)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Build("Select a Value: {0}",V.Local.sTitle,V.Local.sCaption)
+			F.Intrinsic.Control.EndIf
+			Gui.frmValues..Caption(V.Local.sCaption)
+			Gui.frmValues..Show
+	F.Intrinsic.Control.EndSelect
+	
+	F.ODBC.Connection!con.Close
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.GsGCTitles_RowCellClick.End
+
+Program.Sub.cmdSave_Click.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+	
+	V.Local.iCnt.Declare(Long, 0)
+	V.Local.iRow.Declare(Long, 0)
+	V.Local.sUserField.Declare(String, "")
+	V.Local.sCat1.Declare(String, "")
+	V.Local.sCat2.Declare(String, "")
+	V.Local.sCat3.Declare(String, "")
+	V.Local.sName.Declare(String, "")
+	V.Local.sDesc.Declare(String, "")
+	V.Local.bFlag.Declare(Boolean, False)
+		
+	F.ODBC.Connection!con.OpenCompanyConnection(300)
+			
+	F.Intrinsic.Control.If(V.DataTable.dtUFVals.RowCount,=,0)
+		F.Data.DataTable.AddRow("dtUFVals","UFID",0,"PART",V.Global.sPart.Trim,"LOCATION",V.Global.sLoc.Trim, "NEW_FLAG", "TRUE")
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.For(V.Local.iCnt,1,30,1)
+		F.Intrinsic.String.Build("USER{0}",V.Local.iCnt,V.Local.sUserField)
+		F.Intrinsic.Math.Sub(V.Local.iCnt,1,V.Local.iRow)
+		F.Data.DataTable.SetValue("dtUFVals",0,V.Local.sUserField,V.DataTable.dtUserFields(V.Local.iRow).Value!FieldValTrim)
+	F.Intrinsic.Control.Next(V.Local.iCnt)
+	
+	F.Intrinsic.Control.If(V.Passed.000027.UCase, =, "YES")
+		F.Intrinsic.Control.If(V.DataView.dtCategories!dvCategories.RowCount, >, 0)
+			V.Local.sName.Set(V.Screen.frmUserFields!txtName.Text.Trim)
+			V.Local.sDesc.Set(V.Screen.frmUserFields!txtDescription.Text.Trim)
+			V.Local.bFlag.Set(True)
+'		F.Intrinsic.Control.Else
+'			F.Intrinsic.UI.Msgbox("Part is flagged as Online Part. Please select a Category before saving.", "NO CATEGORY SELECTED")
+'			F.ODBC.Connection!con.Close
+'			F.Intrinsic.Control.ExitSub
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		V.Local.sName.Set("")
+		V.Local.sDesc.Set("")		
+		V.Local.bFlag.Set(False)
+	F.Intrinsic.Control.EndIf
+
+	V.Local.sCat1.Set("")
+	V.Local.sCat2.Set("")
+	V.Local.sCat3.Set("")
+	
+	'Using the SaveToDB function, while setting up the data with .PSQLfriendly was creating a duplication error on the apostrophes
+'	F.Data.DataTable.SetValue("dtUFVals", 0, "PARENT", V.Local.sCat1.PSQLFriendly, "Layer1", V.Local.sCat2.PSQLFriendly, "Layer2", V.Local.sCat3.PSQLFriendly, "PartName", V.Local.sName.PSQLFriendly, "PartDesc", V.Local.sDesc.PSQLFriendly, "ONLINEFLAG", V.Local.bFlag.PSQLFriendly, "MODIFIED", V.Local.bFlag.PSQLFriendly)
+	'F.Data.DataTable.SetValue("dtUFVals", 0, "PARENT", V.Local.sCat1, "Layer1", V.Local.sCat2, "Layer2", V.Local.sCat3, "PartName", V.Local.sName, "PartDesc", V.Local.sDesc, "ONLINEFLAG", V.Local.bFlag, "MODIFIED", V.Local.bFlag)
+	F.Data.DataTable.SetValue("dtUFVals", 0,  "Layer1", V.Local.sCat2, "Layer2", V.Local.sCat3, "PartName", V.Local.sName, "PartDesc", V.Local.sDesc, "ONLINEFLAG", V.Local.bFlag, "MODIFIED", V.Local.bFlag)
+	F.Data.DataTable.SaveToDB("dtUFVals","con","GCG_5289_USER_FIELDS","UFID*!*PART*!*LOCATION")
+	F.Intrinsic.UI.Msgbox("User Field Values Saved","User Field Values")
+	
+	F.Intrinsic.Control.If(V.Local.bFlag, =, True)
+		F.Intrinsic.Control.CallSub(SaveCats)
+		F.Intrinsic.Control.CallSub(SaveImages)
+	F.Intrinsic.Control.EndIf
+	
+	F.ODBC.Connection!con.Close
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.frmValues_UnLoad.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+
+	Gui.frmValues..Visible(False)
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.frmValues_UnLoad.End
+
+Program.Sub.GsGCValues_RowCellClick.Start
+	F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+
+	F.Intrinsic.Control.If(V.Args.Clicks,=,2)
+		F.Data.DataTable.SetValue("dtUserFields",V.Global.iRowIndex,"Value",V.Args.CellValue)
+		Gui.frmValues..Visible(False)
+	F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.Catch
+		F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End 
+	F.Intrinsic.Control.EndTry
+Program.Sub.GsGCValues_RowCellClick.End
+
+Program.Sub.ParentPop.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sReturn.Declare(String, "")
+V.Local.iCount.Declare(Long, 0)
+
+F.Data.DataView.Create("dtMainDDL", "dvParent", 22, "[Parent] = '0'", "")
+
+F.Data.DataView.ToDataTableDistinct("dtMainDDL", "dvParent", "dtParent", "Category", True)
+
+Gui.frmUserFields.ddlParent.AddItem("")
+
+F.Intrinsic.Control.For(V.Local.iCount, 0, V.DataTable.dtParent.RowCount--, 1)
+	Gui.frmUserFields.ddlParent.AddItem(V.DataTable.dtParent(V.Local.iCount).Category!FieldValTrim)
+F.Intrinsic.Control.Next(V.Local.iCount)
+
+F.Data.DataTable.Close("dtParent")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.ParentPop.End
+
+Program.Sub.Layer1Pop.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.iCount.Declare(Long, 0)
+V.Local.sFilter.Declare(String, "")
+
+Gui.frmUserFields.ddlLayer1.ClearItems
+Gui.frmUserFields.ddlLayer2.ClearItems
+
+F.Intrinsic.String.Build("[Parent]='{0}'", V.Screen.frmUserFields!ddlParent.Value, V.Local.sFilter)
+
+F.Data.DataView.Create("dtMainDDL", "dvLayer1", 22, V.Local.sFilter, "")
+F.Data.DataView.ToDataTableDistinct("dtMainDDL", "dvLayer1", "dtLayer1", "Category")
+
+Gui.frmUserFields.ddlLayer1.AddItem("")
+
+F.Intrinsic.Control.For(V.Local.iCount, 0, V.DataTable.dtLayer1.RowCount--, 1)
+	Gui.frmUserFields.ddlLayer1.AddItem(V.DataTable.dtLayer1(V.Local.iCount).Category!FieldValTrim)
+F.Intrinsic.Control.Next(V.Local.icount)
+
+F.Data.DataTable.Close("dtLayer1")
+F.Data.DataView.Close("dtMainDDL", "dvLayer1")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.Layer1Pop.End
+
+Program.Sub.Layer2Pop.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.iCount.Declare(Long, 0)
+V.Local.sFilter.Declare(String, "")
+
+Gui.frmUserFields.ddlLayer2.ClearItems
+
+F.Intrinsic.String.Build("[Parent]='{0}' AND [GreatParent]='{1}'", V.Screen.frmUserFields!ddlLayer1.Value, V.Screen.frmUserFields!ddlParent.Value, V.Local.sFilter)
+
+F.Data.DataView.Create("dtMainDDL", "dvLayer2", 22, V.Local.sFilter, "")
+
+Gui.frmUserFields.ddlLayer2.AddItem("")
+
+F.Intrinsic.Control.For(V.Local.iCount, 0, V.DataView.dtMainDDL!dvLayer2.RowCount--, 1)
+	Gui.frmUserFields.ddlLayer2.AddItem(V.DataView.dtMainDDL!dvLayer2(V.Local.iCount).Category!FieldValTrim)
+F.Intrinsic.Control.Next(V.Local.icount)
+
+F.Data.DataView.Close("dtMainDDL", "dvLayer2")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.Layer2Pop.End
+
+Program.Sub.TableForDDLS.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+'We are going to gather all data from the maintenance table, and use dataviews to populate the drop down lists
+'F.Data.DataTable.CreateFromSQL("dtMainDDL", "con", "Select Rtrim(Ltrim(Category)) as Category, Rtrim(Ltrim(Parent)) as Parent, Rtrim(Ltrim(Ucase(Parent))) as KeyValue, Cat_ID, Parent_ID, Autonum from GCG_5289_Categories", True)
+F.Data.DataTable.CreateFromSQL("dtMainDDL", "con", "Select Rtrim(Ltrim(Category)) as Category, Rtrim(Ltrim(Parent_Cat)) as Parent, Rtrim(Ltrim(Ucase(Parent_Cat))) as KeyValue, Cat_ID, Parent_ID, Autonum from GCG_5289_Categories", True)
+
+'The parent category ID can be populated in the manner below
+F.Data.Dictionary.CreateFromDataTable("dicParCat", "dtMainDDL", "Autonum", "Cat_ID")
+F.Data.Dictionary.SetDefaultReturn("dicParCat", "-1")
+F.Data.DataTable.AddColumn("dtMainDDL", "ParentCatID", "String")
+F.Data.DataTable.FillFromDictionary("dtMainDDL", "dicParCat", "Parent_ID", "ParentCatID")
+
+F.Data.Dictionary.CreateFromDataTable("dicCat", "dtMainDDL", "Category", "Parent")
+F.Data.Dictionary.SetDefaultReturn("dicCat", "*!*")
+
+F.Data.DataTable.AddColumn("dtMainDDL", "GreatParent", "String")
+
+F.Data.DataTable.FillFromDictionary("dtMainDDL", "dicCat", "KeyValue", "GreatParent")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.TableForDDLS.End
+
+Program.Sub.ParentChange.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+F.Intrinsic.Control.BlockEvents
+
+Gui.frmUserFields.ddlLayer1.Text("")
+Gui.frmUserFields.ddlLayer2.Text("")
+
+F.Intrinsic.Control.If(V.Screen.frmUserFields!ddlParent.Text.Trim, <>, "")
+	F.Intrinsic.String.Build("[Category] = '{0}'", V.Screen.frmUserFields!ddlParent.Text.Trim, V.Local.sFilter)
+	F.Data.DataView.Create("dtMainDDL", "dvTemp", 22, V.Local.sFilter, "")
+	V.Global.iCatId.Set(V.DataView.dtMainDDL!dvTemp(0).Cat_ID!FieldValLong)
+	F.Data.DataView.Close("dtMainDDL", "dvTemp")
+	F.Intrinsic.Control.CallSub(Layer1Pop)	
+	Gui.frmUserFields.ddlLayer1.Enabled(True)
+	Gui.frmUserFields.ddlLayer2.Enabled(False)
+F.Intrinsic.Control.Else
+	Gui.frmUserFields.ddlLayer1.ClearItems
+	Gui.frmUserFields.ddlLayer2.ClearItems
+	V.Global.iCatId.Set(0)	
+	Gui.frmUserFields.ddlLayer1.Enabled(False)
+	Gui.frmUserFields.ddlLayer2.Enabled(False)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.ParentChange.End
+
+Program.Sub.Layer1Change.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+V.Local.iParentID.Declare(Long, 0)
+F.Intrinsic.Control.BlockEvents
+
+Gui.frmUserFields.ddlLayer2.Text("")
+
+F.Intrinsic.Control.If(V.Screen.frmUserFields!ddlLayer1.Text.Trim, <>, "")
+	'Get the CatID from teh parent
+	F.Intrinsic.String.Build("[Category] = '{0}' and [Parent] = '0'", V.Screen.frmUserFields!ddlParent.Text.Trim, V.Local.sFilter)
+	F.Data.DataView.Create("dtMainDDL", "dvParCat", 22, V.Local.sFilter, "")
+	F.Intrinsic.Control.If(V.DataView.dtMainDDL!dvParCat.RowCount, >, 0)
+		V.Local.iParentID.Set(V.DataView.dtMainDDL!dvParCat(0).Cat_ID!FieldValLong)	
+		F.Intrinsic.String.Build("[Category] = '{0}' and [Parent_ID] = '{1}'", V.Screen.frmUserFields!ddlLayer1.Text.Trim, V.Local.iParentID, V.Local.sFilter)
+		F.Data.DataView.Create("dtMainDDL", "dvTemp", 22, V.Local.sFilter, "")
+		F.Intrinsic.Control.If(V.DataView.dtMainDDL!dvTemp.RowCount, <>, 0)
+			V.Global.iCatId.Set(V.DataView.dtMainDDL!dvTemp(0).Cat_ID!FieldValLong)
+		F.Intrinsic.Control.Else
+			
+		F.Intrinsic.Control.EndIf
+		F.Data.DataView.Close("dtMainDDL", "dvTemp")
+		F.Intrinsic.Control.CallSub(Layer2Pop)
+		Gui.frmUserFields.ddlLayer2.Enabled(True)
+	F.Intrinsic.Control.Else
+		
+		V.Global.iCatId.Set(0)
+		Gui.frmUserFields.ddlParent.Text("")
+		Gui.frmUserFields.ddlLayer1.Text("")
+		Gui.frmUserFields.ddlLayer1.Enabled(False)
+		
+		F.Intrinsic.Control.UnBlockEvents
+		F.Data.DataView.Close("dtMainDDL", "dvParCat")
+		Gui.frmUserFields.ddlLayer2.Enabled(False)
+		F.Intrinsic.Control.ExitSub
+		
+	F.Intrinsic.Control.EndIf
+	F.Data.DataView.Close("dtMainDDL", "dvParCat")
+F.Intrinsic.Control.Else
+	'Make sure we have the correct category ID on the global variable
+	F.Intrinsic.String.Build("[Category] = '{0}'", V.Screen.frmUserFields!ddlParent.Text.Trim, V.Local.sFilter)
+	F.Data.DataView.Create("dtMainDDL", "dvTemp", 22, V.Local.sFilter, "")
+	V.Global.iCatId.Set(V.DataView.dtMainDDL!dvTemp(0).Cat_ID!FieldValLong)
+	F.Data.DataView.Close("dtMainDDL", "dvTemp")
+	Gui.frmUserFields.ddlLayer2.ClearItems
+	Gui.frmUserFields.ddlLayer2.Enabled(False)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.Layer1Change.End
+
+Program.Sub.WebCheck.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+'Fired when the screen is populated before it is shown. If the part is not flagged as Website, it will use the smaller version of the screen. Otherwise it will display all parts of it
+
+F.Intrinsic.Control.If(V.Passed.000027.UCase, <>, "YES")
+	
+	Gui.frmUserFields..Size(8475, 10515)
+F.Intrinsic.Control.Else
+
+	F.Intrinsic.Control.CallSub(CategoryGrid)
+	F.Intrinsic.Control.CallSub(ImagesGrid)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.WebCheck.End
+
+Program.Sub.CategoryGrid.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+'This is for the web integration information
+F.Intrinsic.Control.CallSub(ParentPop)
+F.Intrinsic.Control.CallSub(CategoryDT)
+F.Intrinsic.Control.CallSub(CategoryGridProp)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.CategoryGrid.End
+
+Program.Sub.CategoryGridProp.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+Gui.frmUserFields.gsgcCategories.AddGridviewFromDataview("gridCats", "dtCategories", "dvCategories")
+
+'Gui.frmUserFields.gsgcCategories.SetGridviewProperty("gridCats", "AllowEdit", False)
+Gui.frmUserFields.gsgcCategories.SetGridviewProperty("gridCats", "ReadOnly", True)
+
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "AutoNum", "Visible", False)
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Part", "Visible", False)
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Loc", "Visible", False)
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Category_ID", "Visible", False)
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Category", "Visible", False)
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Deleted", "Visible", False)
+
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Parent_Cat", "VisibleIndex", 1)
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Layer1", "VisibleIndex", 2)
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Layer2", "VisibleIndex", 3)
+
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Parent_Cat", "Caption", "Parent Category")
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Layer1", "Caption", "Sub Category")
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Layer2", "Caption", "Child")
+
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Parent_Cat", "Width", 500)
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Layer1", "Width", 500)
+Gui.frmUserFields.gsgcCategories.SetColumnProperty("gridCats", "Layer2", "Width", 500)
+
+Gui.frmUserFields.gsgcCategories.MainView("gridCats")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.CategoryGridProp.End
+
+Program.Sub.CategoryAdd.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sChild.Declare(String, "")
+V.Local.sSubCat.Declare(String, "")
+V.Local.sParent.Declare(String, "")
+V.Local.sCategory.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+
+''We check to see if the category has been added for that item. Because of how categories can be created, we need to have this tedious check
+'F.Intrinsic.Control.If(V.Screen.frmUserFields!ddlLayer2.Text.Trim, <>, "")
+'	'Child is the category
+'	V.Local.sCategory.Set(V.Screen.frmUserFields!ddlLayer2.Text)
+
+'F.Intrinsic.Control.ElseIf(V.Screen.frmUserFields!ddlLayer1.Text.Trim, <>, "")
+'	'Sub Cat is the category
+'	V.Local.sCategory.Set(V.Screen.frmUserFields!ddlLayer1.Text)
+'	
+'F.Intrinsic.Control.ElseIf(V.Screen.frmUserFields!ddlParent.Text.Trim, <>, "")
+'	'Parent is the category
+'	V.Local.sCategory.Set(V.Screen.frmUserFields!ddlParent.Text)
+'	
+'F.Intrinsic.Control.Else
+'	'No Category to add
+'	F.Intrinsic.Control.ExitSub
+'	
+'F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("{0}{1}{2}", V.Screen.frmUserFields!ddlParent.Text.Trim, V.Screen.frmUserFields!ddlLayer1.Text.Trim, V.Screen.frmUserFields!ddlLayer2.Text.Trim, V.Local.sCategory)
+
+F.Intrinsic.Control.If(V.Local.sCategory.Trim, =, "")
+	'No Category to Add
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+'F.Intrinsic.String.Build("[Category] = '{0}' AND [Parent] = '{1}' AND [Layer1] = '{2}' AND [Layer2] = '{3}'", V.Local.sCategory.Trim, V.Screen.frmUserFields!ddlParent.Text.Trim, V.Screen.frmUserFields!ddlLayer1.Text.Trim, V.Screen.frmUserFields!ddlLayer2.Text.Trim, V.Local.sFilter)
+F.Intrinsic.String.Build("[Category_ID] = '{0}'", V.Global.iCatId, V.Local.sFilter)
+F.Data.DataView.Create("dtCategories", "dvCatCheck", 22, V.Local.sFilter, "")
+F.Intrinsic.Control.If(V.DataView.dtCategories!dvCatCheck.RowCount, =, 0)
+	'The entry doesnt exist, so we add it
+	F.Data.DataTable.AddRow("dtCategories", "Part", V.Global.sPart, "Loc", V.Global.sLoc, "Category", V.Local.sCategory, "Parent", V.Screen.frmUserFields!ddlParent.Text.Trim, "Layer1", V.Screen.frmUserFields!ddlLayer1.Text.Trim, "Layer2", V.Screen.frmUserFields!ddlLayer2.Text.Trim, "Deleted", "", "Autonum", "-1", "Category_ID", V.Global.iCatId)
+F.Intrinsic.Control.Else
+	'If it does exist, it may not be showing in the grid because it is marked as deleted, so we remove the deleted flag and the view should automatically repopulate it on the screen
+	F.Data.DataView.SetValue("dtCategories", "dvCatCheck", 0, "Deleted", "")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("dtCategories", "dvCatCheck")
+
+V.Global.iCatId.Set(0)
+'Clear ddls
+Gui.frmUserFields.ddlLayer2.Text("")
+Gui.frmUserFields.ddlLayer1.Text("")
+Gui.frmUserFields.ddlParent.Text("")
+
+Gui.frmUserFields.ddlLayer1.Enabled(False)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.CategoryAdd.End
+
+Program.Sub.CategoryDelete.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sValues.Declare(String, "")
+V.Local.iCount.Declare(Long, 0)
+
+'If they have a row selected, we flag it as Deleted
+Gui.frmUserFields.gsgcCategories.GetSelectedRows("gridCats", V.Local.sValues)
+F.Intrinsic.Control.If(V.Local.sValues.Trim, <>, "")
+	F.Intrinsic.String.Split(V.Local.sValues, "*!*", V.Local.sValues)
+	F.Intrinsic.Control.For(V.Local.iCount, 0, V.Local.sValues.UBound, 1)
+		F.Data.DataTable.SetValue("dtCategories", V.Local.sValues(V.Local.iCount).Long, "Deleted", "D")
+	F.Intrinsic.Control.Next(V.Local.iCount)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.CategoryDelete.End
+
+Program.Sub.SaveCats.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sSql.Declare(String, "")
+
+'Actually delete the stuff that has been flagged as deleted
+F.Data.DataView.Create("dtCategories", "dvDelete", 22, "[Deleted] = 'D' AND [Autonum] <> '-1'", "")
+F.Intrinsic.Control.If(V.DataView.dtCategories!dvDelete.RowCount, >, 0)
+	F.Data.DataView.ToString("dtCategories", "dvDelete", "AutoNum", "", "', '", V.Local.sSql)
+	F.Intrinsic.String.Build("Delete from GCG_5289_InvCategory where Autonum in ('{0}')", V.Local.sSql, V.Local.sSql)
+	F.ODBC.Connection!con.Execute(V.Local.sSql)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("dtCategories", "dvDelete")
+
+'Save the stuff that doesnt exist in the table yet
+F.Data.DataView.Create("dtCategories", "dvToSave", 22, "[AutoNum] = '-1' AND [Deleted] = ''", "")
+F.Data.DataView.ToDataTable("dtCategories", "dvToSave", "dtNewCats")
+
+F.Data.DataTable.RemoveColumn("dtNewCats", "Deleted")
+F.Data.DataTable.SetValue("dtNewCats", -1, "Autonum", "0")
+
+F.Data.DataTable.SaveToDB("dtNewCats", "con", "GCG_5289_InvCategory", "Autonum", 128)
+
+F.Data.DataTable.Close("dtNewCats")
+F.Data.DataView.Close("dtCategories", "dvCategories")
+F.Data.DataTable.Close("dtCategories")
+
+F.Intrinsic.Control.CallSub(CategoryDT)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.SaveCats.End
+
+Program.Sub.CategoryDT.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sSql.Declare(String, "")
+
+'We are loading the grid for the categories
+F.Intrinsic.String.Build("Select Autonum, Part, Loc, Category_ID, Category,Parent_Cat, Layer1, Layer2, '' as Deleted from GCG_5289_InvCategory where Part = '{0}' and Loc = '{1}' order by Parent_Cat ASC, Layer1 ASC, Layer2 ASC", V.Global.sPart, V.Global.sLoc, V.Local.sSql)
+F.Data.DataTable.CreateFromSQL("dtCategories", "con", V.Local.sSql, True)
+F.Data.DataView.Create("dtCategories", "dvCategories", 22, "[Deleted] = ''", "")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.CategoryDT.End
+
+Program.Sub.Layer2Change.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+
+F.Intrinsic.Control.If(V.Screen.frmUserFields!ddlLayer2.Text.Trim, <>, "")
+
+	F.Intrinsic.String.Build("[Category] = '{0}' and [Parent_ID] = '{1}'", V.Screen.frmUserFields!ddlLayer2.Text.Trim, V.Global.iCatId, V.Local.sFilter)
+	F.Data.DataView.Create("dtMainDDL", "dvTemp", 22, V.Local.sFilter, "")
+	V.Global.iCatId.Set(V.DataView.dtMainDDL!dvTemp(0).Cat_ID!FieldValLong)
+	F.Data.DataView.Close("dtMainDDL", "dvTemp")
+	
+F.Intrinsic.Control.Else
+	
+	'We get the ID from the subcategory. First get the parent ID
+	F.Intrinsic.String.Build("[Category] = '{0}'", V.Screen.frmUserFields!ddlParent.Text.Trim, V.Local.sFilter)
+	F.Data.DataView.Create("dtMainDDL", "dvTemp", 22, V.Local.sFilter, "")
+	V.Global.iCatId.Set(V.DataView.dtMainDDL!dvTemp(0).Cat_ID!FieldValLong)
+	F.Data.DataView.Close("dtMainDDL", "dvTemp")
+	
+	'Once we have the parent ID, we use it to find teh sub category's ID
+	F.Intrinsic.String.Build("[Category] = '{0}' and [Parent_ID] = '{1}'", V.Screen.frmUserFields!ddlLayer1.Text.Trim, V.Global.iCatId, V.Local.sFilter)
+	F.Data.DataView.Create("dtMainDDL", "dvTemp", 22, V.Local.sFilter, "")
+	V.Global.iCatId.Set(V.DataView.dtMainDDL!dvTemp(0).Cat_ID!FieldValLong)
+	F.Data.DataView.Close("dtMainDDL", "dvTemp")
+		
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.Layer2Change.End
+
+Program.Sub.ImagesGrid.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+
+'We are going to populate the images table with all the image names associated with this inventory part.
+F.Intrinsic.Control.CallSub(ImagesDT)
+F.Intrinsic.Control.CallSub(ImagesGridProp)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+'	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ImagesGrid.End
+
+Program.Sub.ImagesDT.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+
+'We are going to populate the images table with all the image names associated with this inventory part.
+F.Intrinsic.String.Build("Select Autonum, Part, Loc, ImageName, '' as Deleted from GCG_5289_InvImages where Part = '{0}' and Loc = '{1}'", V.Global.sPart, V.Global.sLoc, V.Local.sFilter)
+F.Data.DataTable.CreateFromSQL("dtImages", "con", V.Local.sFilter, True)
+F.Data.DataView.Create("dtImages", "dvImages", 22, "[Deleted] = ''", "")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+'	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ImagesDT.End
+
+Program.Sub.ImagesGridProp.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+Gui.frmUserFields.gsgcImages.AddGridviewFromDataview("gridImages", "dtImages", "dvImages")
+
+Gui.frmUserFields.gsgcImages.SetGridviewProperty("gridImages", "ReadOnly", True)
+
+Gui.frmUserFields.gsgcImages.SetColumnProperty("gridImages", "AutoNum", "Visible", False)
+Gui.frmUserFields.gsgcImages.SetColumnProperty("gridImages", "Part", "Visible", False)
+Gui.frmUserFields.gsgcImages.SetColumnProperty("gridImages", "Loc", "Visible", False)
+Gui.frmUserFields.gsgcImages.SetColumnProperty("gridImages", "Deleted", "Visible", False)
+
+Gui.frmUserFields.gsgcImages.SetColumnProperty("gridImages", "ImageName", "VisibleIndex", 1)
+
+Gui.frmUserFields.gsgcImages.SetColumnProperty("gridImages", "ImageName", "Caption", "Image")
+
+Gui.frmUserFields.gsgcImages.MainView("gridImages")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+'	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ImagesGridProp.End
+
+Program.Sub.ImageBrowser.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.sMessage.Declare(String, "")
+V.Local.sCheck.Declare(String, "")
+
+'We are going to allow them to open a file browser for images in a very specific folder. Any images that are to be used for inventory parts that will be displayed on the website need to be in this folder. This is because the website developer will be directing the images to that directory only
+F.Intrinsic.UI.ShowOpenFileDialog("T:\Website Images\", "", , V.Local.sRet)
+
+F.Intrinsic.Control.If(V.Local.sRet, <>, "***CANCEL***")
+	'We need to split the return to only save the image name. We will need to verify that the user did not select an image out of a different directory
+	F.Intrinsic.String.Split(V.Local.sRet, "T:\Website Images\", V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet(0).Trim, <>, "")
+		'This means that it was in a directory different from what we expected.
+		F.Intrinsic.String.Build("Image is required to be in the 'T:\Website Images\' directory.{0}{0}Please move the image to this directory before trying to use it for an inventory part.", V.Ambient.NewLine, V.Local.sMessage)
+		F.Intrinsic.UI.Msgbox(V.Local.sMessage, "IMAGE LOCATION ERROR")
+		Gui.frmUserFields.txtImage.Text("")
+		
+	F.Intrinsic.Control.Else
+		V.Local.sRet.RedimPreserve(0,1)
+		F.Intrinsic.String.Split(V.Local.sRet(1), "\", V.Local.sCheck)
+		F.Intrinsic.Control.If(V.Local.sCheck.UBound, >, 0)
+			'This means that it was in a directory within T:\, which is still invalid
+			F.Intrinsic.String.Build("Image is required to be in the 'T:\Website Images\' directory.{0}{0}Please move the image to this directory before trying to use it for an inventory part.", V.Ambient.NewLine, V.Local.sMessage)
+			F.Intrinsic.UI.Msgbox(V.Local.sMessage, "IMAGE LOCATION ERROR")
+			Gui.frmUserFields.txtImage.Text("")
+			
+		F.Intrinsic.Control.Else	
+			Gui.frmUserFields.txtImage.Text(V.Local.sCheck.Trim)
+			
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	Gui.frmUserFields.txtImage.Text("")
+	
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+'	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ImageBrowser.End
+
+Program.Sub.ImageAdd.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+
+'If they have selected an image and the name populated on the textbox, we add that to the grid
+F.Intrinsic.Control.If(V.Screen.frmUserFields!txtImage.Text.Trim, =, "")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+'Check to make sure the image hasnt been added to the part already
+F.Intrinsic.String.Build("[ImageName] = '{0}'", V.Screen.frmUserFields!txtImage.Text.Trim, V.Local.sFilter)
+F.Data.DataView.Create("dtImages", "dvImCheck", 22, V.Local.sFilter, "")
+F.Intrinsic.Control.If(V.DataView.dtImages!dvImCheck.RowCount, =, 0)
+	F.Data.DataTable.AddRow("dtImages", "Part", V.Global.sPart, "Loc", V.Global.sLoc, "ImageName", V.Screen.frmUserFields!txtImage.Text.Trim, "Deleted", "", "Autonum", "-1")
+F.Intrinsic.Control.Else
+	F.Data.DataView.SetValue("dtImages", "dvImCheck", -1, "Deleted", "")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("dtImages", "dvImCheck")
+
+Gui.frmUserFields.txtImage.Text("")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+'	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ImageAdd.End
+
+Program.Sub.ImageDelete.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sValues.Declare(String, "")
+V.Local.iCount.Delcare(Long, 0)
+
+'We're going to flag the deleted 
+Gui.frmUserFields.gsgcImages.GetSelectedRows("gridImages", V.Local.sValues)
+F.Intrinsic.Control.If(V.Local.sValues.Trim, <>, "")
+	F.Intrinsic.String.Split(V.Local.sValues, "*!*", V.Local.sValues)
+	F.Intrinsic.Control.For(V.Local.iCount, 0, V.Local.sValues.UBound, 1)
+		F.Data.DataTable.SetValue("dtImages", V.Local.sValues(V.Local.iCount).Long, "Deleted", "D")
+	F.Intrinsic.Control.Next(V.Local.iCount)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.ImageDelete.End
+
+Program.Sub.SaveImages.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sSql.Declare(String, "")
+
+'Actually delete the stuff that has been flagged as deleted
+F.Data.DataView.Create("dtImages", "dvDelete", 22, "[Deleted] = 'D' AND [Autonum] <> '-1'", "")
+F.Intrinsic.Control.If(V.DataView.dtImages!dvDelete.RowCount, >, 0)
+	F.Data.DataView.ToString("dtImages", "dvDelete", "AutoNum", "", "', '", V.Local.sSql)
+	F.Intrinsic.String.Build("Delete from GCG_5289_InvImages where Autonum in ('{0}')", V.Local.sSql, V.Local.sSql)
+	F.ODBC.Connection!con.Execute(V.Local.sSql)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("dtImages", "dvDelete")
+
+'Save the stuff that doesnt exist in the table yet
+F.Data.DataView.Create("dtImages", "dvToSave", 22, "[AutoNum] = '-1' AND [Deleted] = ''", "")
+F.Data.DataView.ToDataTable("dtImages", "dvToSave", "dtNewImages")
+
+F.Data.DataTable.RemoveColumn("dtNewImages", "Deleted")
+F.Data.DataTable.SetValue("dtNewImages", -1, "Autonum", "0")
+
+F.Data.DataTable.SaveToDB("dtNewImages", "con", "GCG_5289_InvImages", "Autonum", 128)
+
+F.Data.DataTable.Close("dtNewImages")
+F.Data.DataView.Close("dtImages", "dvImages")
+F.Data.DataTable.Close("dtImages")
+
+F.Intrinsic.Control.CallSub(ImagesGrid)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+'	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.SaveImages.End
+
+Program.Sub.Comments.Start
+${$5$}$2.0.0.0$}$2
+${$6$}$adsouza$}$20220921204632555$}$JX3L09Cgehg7O+lKYSb2ur8FFsJUp9u/WmgyyrTZC1QAo/ykohGmoAZWs5OHNFun8EtFOxQ195U=
+Program.Sub.Comments.End
