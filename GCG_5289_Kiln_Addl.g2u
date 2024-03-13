@@ -1,0 +1,221 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.F_Kiln..Create
+Gui.F_Kiln..Caption("Additional fields for Kilns")
+Gui.F_Kiln..Size(6465,10725)
+Gui.F_Kiln..MinX(5910)
+Gui.F_Kiln..MinY(5000)
+Gui.F_Kiln..Position(0,0)
+Gui.F_Kiln..BackColor(-2147483633)
+Gui.F_Kiln..MousePointer(0)
+Gui.F_Kiln..Event(UnLoad,Unload)
+Gui.F_Kiln.gsgcAttributes.Create(GsGridControl)
+Gui.F_Kiln.gsgcAttributes.Size(5955,9210)
+Gui.F_Kiln.gsgcAttributes.Position(180,360)
+Gui.F_Kiln.gsgcAttributes.Anchor(15)
+Gui.F_Kiln.cmdSave.Create(Button)
+Gui.F_Kiln.cmdSave.Size(945,375)
+Gui.F_Kiln.cmdSave.Position(5175,9750)
+Gui.F_Kiln.cmdSave.Caption("Save")
+Gui.F_Kiln.cmdSave.Anchor(10)
+Gui.F_Kiln.cmdSave.Event(Click,SaveInfo)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'This is part of the web integration with Woo Commerce for Paragon. Coded on 9/27/2019. This is a screen that will fire from the script 3 button in the inventory master screen. 
+'We are going to save a bunch of attributes to the selected part, with intention of passing them to the website when creating and updating the part
+
+V.Local.sError.Declare(String, "")
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+
+	F.Intrinsic.Control.Case(10120)
+		'Inventory Master (Script 2 Button)
+		V.Passed.000069.Set("Addl Kiln Info")
+		
+	F.Intrinsic.Control.Case(10220)
+		'We want to make sure the user has selected a part, and populate the screen if they have.
+		F.Intrinsic.Control.If(V.Passed.000007,=,"")
+			F.Intrinsic.UI.Msgbox("Please Select a Part Number.","Additional Kiln Info")
+			F.Intrinsic.Control.End
+		F.Intrinsic.Control.EndIf
+		
+		F.Intrinsic.Control.CallSub(KilnVerification)
+		F.Intrinsic.Control.CallSub(GatherKilnInfo)
+		F.Intrinsic.Control.CallSub(FillInformation)
+		
+		Gui.F_Kiln..Show
+
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Unload.Start
+V.Local.sError.Declare(String, "")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.Unload.End
+
+Program.Sub.KilnVerification.Start
+V.Local.sError.Declare(String, "")
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.KilnVerification.End
+
+Program.Sub.GatherKilnInfo.Start
+V.Local.sError.Declare(String, "")
+V.Local.sDbzCols.Declare(String, "")
+V.Local.sPartNo.Declare(String, "")
+V.Local.sLoc.Declare(String, "")
+V.Local.sSql.Declare(String, "")
+
+F.ODBC.Connection!conx.OpenCompanyConnection
+
+F.Intrinsic.String.GSSPartString(V.Passed.000007,V.Passed.000008,V.Local.sPartNo)
+
+V.Local.sLoc.Set(V.Passed.000009.String)
+
+F.Intrinsic.String.Replace("model*!*exp_desc*!*max_temp_f*!*max_temp_c*!*voltage*!*phase*!*hertz*!*amps*!*watts*!*cordset*!*controller*!*cont_overlay*!*zone*!*thermocouple*!*lid_door_switch*!*breaker_size*!*copper_wire_size*!*tuv*!*ce*!*ul*!*std_dims*!*kiln_type*!*door_type*!*sides*!*internal_area*!*refract_ins_type*!*wall_thickness*!*top_thickness*!*bottom_thickness*!*volume_cubic_feet*!*volume_litres*!*width_dia_in*!*width_dia_metric*!*depth_inches*!*depth_metric*!*height_inches*!*height_metric*!*outer_size_inches*!*outer_size_metric*!*ship_size_inches*!*ship_size_metric*!*ship_weight_lbs*!*ship_weight_kg*!*doorway_clr_in*!*doorway_clr_metric*!*ship_method*!*sba*!*element_1*!*element_1_loc*!*element_1_qty*!*element_1_vol*!*element_2*!*element_2_loc*!*element_2_qty*!*element_2_vol*!*element_3*!*element_3_loc*!*element_3_qty*!*element_3_vol*!*element_4*!*element_4_loc*!*element_4_qty*!*element_4_vol*!*element_5*!*element_5_loc*!*element_5_qty*!*element_5_vol*!*except_1*!*except_2*!*except_3*!*except_4*!*except_5*!*except_6*!*notes", "*!*", ", ", V.Local.sDbzCols)
+
+F.Intrinsic.String.Build("Select TOP 1 INV_PART, LOC, Modified_dt, {0} from GCG_5289_Kiln_Addl where INV_PART = '{1}' and LOC = '{2}' order by Modified_dt desc", V.Local.sDbzCols, V.Local.sPartNo, V.Local.sLoc, V.Local.sSql)
+F.Data.DataTable.CreateFromSQL("dtKilnVals", "conx", V.Local.sSql, True)
+
+F.Intrinsic.Control.If(V.DataTable.dtKilnVals.RowCount, =, 0)
+	F.Data.DataTable.AddRow("dtKilnVals", "INV_PART", V.Local.sPartNo.Trim, "LOC", V.Local.sLoc)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Create("dtDisplay", True)
+F.Data.DataTable.AddColumn("dtDisplay", "Field", "String")
+F.Data.DataTable.AddColumn("dtDisplay", "Value", "String")
+
+F.ODBC.Connection!conx.Close
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.GatherKilnInfo.End
+
+Program.Sub.FillInformation.Start
+V.Local.sError.Declare(String, "")
+V.Local.sFldCols.Declare(String, "")
+V.Local.sDbzCols.Declare(String, "")
+V.Local.sColName.Declare(String, "")
+V.Local.iDrac.Declare(Long, 0)
+
+F.Intrinsic.String.Split("Model*!*Expanded Description*!*Max Temp F*!*Max Temp C*!*Voltage*!*Phase*!*Hertz*!*Amps*!*Watts*!*Cordset*!*Controller*!*Control Overlay/Mode*!*Zone*!*Thermocouple*!*Lid/Door Switch*!*Breaker Size*!*Copper Wire Size*!*TUV*!*CE*!*UL*!*Standard Dimensions*!*Kiln Type*!*Door Type*!*Sides*!*Internal Area*!*Refractory Insulation Type*!*Wall Thickness*!*Top Thickness*!*Bottom Thickness*!*Volume (Cubic Feet)*!*Volume (Litres)*!*Width/Diameter (Inches)*!*Width/Diameter (Metric)*!*Depth (Inches)*!*Depth (Metric)*!*Height (Inches)*!*Height (Metric)*!*Outer Size (Inches)*!*Outer Size (Metric)*!*Ship Size (Inches)*!*Ship Size (Metric)*!*Ship Weight (lbs)*!*Ship Weight (Kg)*!*Doorway Clearance (Inches)*!*Doorway Clearance (Metric)*!*Ship Method*!*SBA*!*Element 1*!*Element 1 Location*!*Element 1 Quantity*!*Element 1 Voltage*!*Element 2*!*Element 2 Location*!*Element 2 Quantity*!*Element 2 Voltage*!*Element 3*!*Element 3 Location*!*Element 3 Quantity*!*Element 3 Voltage*!*Element 4*!*Element 4 Location*!*Element 4 Quantity*!*Element 4 Voltage*!*Element 5*!*Element 5 Location*!*Element 5 Quantity*!*Element 5 Voltage*!*Exception 1*!*Exception 2*!*Exception 3*!*Exception 4*!*Exception 5*!*Exception 6*!*Notes", "*!*", V.Local.sFldCols)
+F.Intrinsic.String.Split("model*!*exp_desc*!*max_temp_f*!*max_temp_c*!*voltage*!*phase*!*hertz*!*amps*!*watts*!*cordset*!*controller*!*cont_overlay*!*zone*!*thermocouple*!*lid_door_switch*!*breaker_size*!*copper_wire_size*!*tuv*!*ce*!*ul*!*std_dims*!*kiln_type*!*door_type*!*sides*!*internal_area*!*refract_ins_type*!*wall_thickness*!*top_thickness*!*bottom_thickness*!*volume_cubic_feet*!*volume_litres*!*width_dia_in*!*width_dia_metric*!*depth_inches*!*depth_metric*!*height_inches*!*height_metric*!*outer_size_inches*!*outer_size_metric*!*ship_size_inches*!*ship_size_metric*!*ship_weight_lbs*!*ship_weight_kg*!*doorway_clr_in*!*doorway_clr_metric*!*ship_method*!*sba*!*element_1*!*element_1_loc*!*element_1_qty*!*element_1_vol*!*element_2*!*element_2_loc*!*element_2_qty*!*element_2_vol*!*element_3*!*element_3_loc*!*element_3_qty*!*element_3_vol*!*element_4*!*element_4_loc*!*element_4_qty*!*element_4_vol*!*element_5*!*element_5_loc*!*element_5_qty*!*element_5_vol*!*except_1*!*except_2*!*except_3*!*except_4*!*except_5*!*except_6*!*notes", "*!*", V.Local.sDbzCols)
+
+F.Intrinsic.Control.For(V.Local.iDrac, 0, V.Local.sFldCols.UBound, 1)
+	V.Local.sColName.Set(V.Local.sDbzCols(V.Local.iDrac).Trim)
+	F.Data.DataTable.AddRow("dtDisplay", "Field", V.Local.sFldCols(V.Local.iDrac).UCase, "Value", V.DataTable.dtKilnVals(0).[V.Local.sColName]!FieldValTrim)
+F.Intrinsic.Control.Next(V.Local.iDrac)
+
+F.Intrinsic.Control.CallSub(GridProperties)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.FillInformation.End
+
+Program.Sub.SaveInfo.Start
+V.Local.sError.Declare(String, "")
+V.Local.sPartNo.Declare(String, "")
+V.Local.sLoc.Declare(String, "")
+V.Local.sUpdate.Declare(String, "")
+
+F.Data.DataTable.SetValue("dtKilnVals", 0, "model", V.DataTable.dtDisplay(0).Value!FieldValTrim, "exp_desc", V.DataTable.dtDisplay(1).Value!FieldValTrim, "max_temp_f", V.DataTable.dtDisplay(2).Value!FieldValTrim, "max_temp_c", V.DataTable.dtDisplay(3).Value!FieldValTrim, "voltage", V.DataTable.dtDisplay(4).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "phase", V.DataTable.dtDisplay(5).Value!FieldValTrim, "hertz", V.DataTable.dtDisplay(6).Value!FieldValTrim, "amps", V.DataTable.dtDisplay(7).Value!FieldValTrim, "watts", V.DataTable.dtDisplay(8).Value!FieldValTrim, "cordset", V.DataTable.dtDisplay(9).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "controller", V.DataTable.dtDisplay(10).Value!FieldValTrim, "cont_overlay", V.DataTable.dtDisplay(11).Value!FieldValTrim, "zone", V.DataTable.dtDisplay(12).Value!FieldValTrim, "thermocouple", V.DataTable.dtDisplay(13).Value!FieldValTrim, "lid_door_switch", V.DataTable.dtDisplay(14).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "breaker_size", V.DataTable.dtDisplay(15).Value!FieldValTrim, "copper_wire_size", V.DataTable.dtDisplay(16).Value!FieldValTrim, "tuv", V.DataTable.dtDisplay(17).Value!FieldValTrim, "ce", V.DataTable.dtDisplay(18).Value!FieldValTrim, "ul", V.DataTable.dtDisplay(19).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "std_dims", V.DataTable.dtDisplay(20).Value!FieldValTrim, "kiln_type", V.DataTable.dtDisplay(21).Value!FieldValTrim, "door_type", V.DataTable.dtDisplay(22).Value!FieldValTrim, "sides", V.DataTable.dtDisplay(23).Value!FieldValTrim, "internal_area", V.DataTable.dtDisplay(24).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "refract_ins_type", V.DataTable.dtDisplay(25).Value!FieldValTrim,"wall_thickness", V.DataTable.dtDisplay(26).Value!FieldValTrim,"top_thickness", V.DataTable.dtDisplay(27).Value!FieldValTrim,"bottom_thickness", V.DataTable.dtDisplay(28).Value!FieldValTrim,"volume_cubic_feet", V.DataTable.dtDisplay(29).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "volume_litres", V.DataTable.dtDisplay(30).Value!FieldValTrim,"width_dia_in", V.DataTable.dtDisplay(31).Value!FieldValTrim,"width_dia_metric", V.DataTable.dtDisplay(32).Value!FieldValTrim,"depth_inches", V.DataTable.dtDisplay(33).Value!FieldValTrim,"depth_metric", V.DataTable.dtDisplay(34).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "height_inches", V.DataTable.dtDisplay(35).Value!FieldValTrim,"height_metric", V.DataTable.dtDisplay(36).Value!FieldValTrim,"outer_size_inches", V.DataTable.dtDisplay(37).Value!FieldValTrim,"outer_size_metric", V.DataTable.dtDisplay(38).Value!FieldValTrim,"ship_size_inches", V.DataTable.dtDisplay(39).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "ship_size_metric", V.DataTable.dtDisplay(40).Value!FieldValTrim,"ship_weight_lbs", V.DataTable.dtDisplay(41).Value!FieldValTrim,"ship_weight_kg", V.DataTable.dtDisplay(42).Value!FieldValTrim,"doorway_clr_in", V.DataTable.dtDisplay(43).Value!FieldValTrim,"doorway_clr_metric", V.DataTable.dtDisplay(44).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "ship_method", V.DataTable.dtDisplay(45).Value!FieldValTrim,"sba", V.DataTable.dtDisplay(46).Value!FieldValTrim,"element_1", V.DataTable.dtDisplay(47).Value!FieldValTrim,"element_1_loc", V.DataTable.dtDisplay(48).Value!FieldValTrim,"element_1_qty", V.DataTable.dtDisplay(49).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "element_1_vol", V.DataTable.dtDisplay(50).Value!FieldValTrim,"element_2", V.DataTable.dtDisplay(51).Value!FieldValTrim,"element_2_loc", V.DataTable.dtDisplay(52).Value!FieldValTrim,"element_2_qty", V.DataTable.dtDisplay(53).Value!FieldValTrim,"element_2_vol", V.DataTable.dtDisplay(54).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "element_3", V.DataTable.dtDisplay(55).Value!FieldValTrim,"element_3_loc", V.DataTable.dtDisplay(56).Value!FieldValTrim,"element_3_qty", V.DataTable.dtDisplay(57).Value!FieldValTrim,"element_3_vol", V.DataTable.dtDisplay(58).Value!FieldValTrim,"element_4", V.DataTable.dtDisplay(59).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "element_4_loc", V.DataTable.dtDisplay(60).Value!FieldValTrim,"element_4_qty", V.DataTable.dtDisplay(61).Value!FieldValTrim,"element_4_vol", V.DataTable.dtDisplay(62).Value!FieldValTrim,"element_5", V.DataTable.dtDisplay(63).Value!FieldValTrim,"element_5_loc", V.DataTable.dtDisplay(64).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "element_5_qty", V.DataTable.dtDisplay(65).Value!FieldValTrim,"element_5_vol", V.DataTable.dtDisplay(66).Value!FieldValTrim,"except_1", V.DataTable.dtDisplay(67).Value!FieldValTrim,"except_2", V.DataTable.dtDisplay(68).Value!FieldValTrim,"except_3", V.DataTable.dtDisplay(69).Value!FieldValTrim)
+F.Data.DataTable.SetValue("dtKilnVals", 0, "except_4", V.DataTable.dtDisplay(70).Value!FieldValTrim,"except_5", V.DataTable.dtDisplay(71).Value!FieldValTrim, "except_6", V.DataTable.dtDisplay(72).Value!FieldValTrim,"notes", V.DataTable.dtDisplay(73).Value!FieldValTrim,"Modified_dt", V.Ambient.Date)
+
+F.ODBC.Connection!conx.OpenCompanyConnection
+
+F.Data.DataTable.SaveToDB("dtKilnVals", "conx", "GCG_5289_Kiln_Addl", "INV_PART*!*LOC")
+
+F.Intrinsic.String.GSSPartString(V.Passed.000007,V.Passed.000008,V.Local.sPartNo)
+V.Local.sLoc.Set(V.Passed.000009.String)
+
+F.Intrinsic.String.Build("Update GCG_5289_USER_FIELDS set MODIFIED = '1' where PART = '{0}' and LOCATION = '{1}'", V.Local.sPartNo, V.Local.sLoc, V.Local.sUpdate)
+F.ODBC.Connection!conx.Execute(V.Local.sUpdate)
+
+F.ODBC.Connection!conx.Close
+
+F.Intrinsic.Control.CallSub(Unload)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.SaveInfo.End
+
+Program.Sub.GridProperties.Start
+V.Local.sError.Declare(String, "")
+
+Gui.F_Kiln.gsgcAttributes.AddGridviewFromDatatable("gridValues", "dtDisplay")
+
+Gui.F_Kiln.gsgcAttributes.SetGridviewProperty("gridValues", "AllowSort", False)
+Gui.F_Kiln.gsgcAttributes.SetGridviewProperty("gridValues", "AllowFilter", False)
+Gui.F_Kiln.gsgcAttributes.SetGridviewProperty("gridValues", "AllowAddRows", False)
+Gui.F_Kiln.gsgcAttributes.SetGridviewProperty("gridValues", "AllowColumnResizing", False)
+Gui.F_Kiln.gsgcAttributes.SetGridviewProperty("gridValues", "AllowColumnMoving", False)
+
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Field", "CellFontBold", True)
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Field", "ReadOnly", True)
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Field", "AllowEdit", False)
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Field", "MinWidth", 200)
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Field", "Fixed", "left")
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Field", "ShowCaption", False)
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Field", "TabStop", False)
+
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Value", "ReadOnly", False)
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Value", "AllowEdit", True)
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Value", "MinWidth", 250)
+Gui.F_Kiln.gsgcAttributes.SetColumnProperty("gridValues", "Value", "ShowCaption", False)
+
+Gui.F_Kiln.gsgcAttributes.MainView("gridValues")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.GridProperties.End
+
+Program.Sub.Comments.Start
+${$5$}$2.0.0.0$}$2
+${$6$}$adsouza$}$20220921205148562$}$JX3L09Cgehg7O+lKYSb2ur8FFsJUp9u/WmgyyrTZC1QAo/ykohGmoAff9vYBzUKt0N73cVmGH1U=
+Program.Sub.Comments.End
