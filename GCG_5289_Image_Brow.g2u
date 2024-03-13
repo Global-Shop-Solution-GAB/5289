@@ -1,0 +1,232 @@
+Program.Sub.Preflight.Start
+Program.External.Include.Library("6013.lib")
+'Program.External.Include.Library("6004.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+'This project will pull all the customers from the website using REST API functions. It will tehn check against the database to see which customers need to be added to GS.
+'We will probably need to set up flags for changes, so we only upload/update pending information
+'Created for Paragon by FEQ 11/26/2018. We will be using REST API functions
+
+'We then gather what info we have in the GS custom table. This table's only purpose is to keep track of what has already been uploaded into GS so we dont create duplicates.
+F.Intrinsic.Control.CallSub(GSInfo)
+
+F.Intrinsic.UI.InvokeWaitDialog("Gathering images from Website")
+
+'We are going to begin by gathering the information from WooCommerce through Rest API. 
+F.Intrinsic.Control.CallSub(WooInfo, "Count", 1)
+
+F.Intrinsic.UI.ChangeWaitStatus("Saving data to database")
+'GO through the WooCommerce info and flag everything that already exists, then create new customers
+F.Intrinsic.Control.CallSub(ProcessNewEntries)
+
+F.Intrinsic.UI.CloseWaitDialog
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Concat("Project: GCG_5289_Image_Brow.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError) 
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.Endtry
+Program.Sub.Main.End
+
+Program.Sub.WooInfo.Start
+'F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sUser.Declare(String, "")
+V.Local.sPass.Declare(String, "")
+V.Local.sURL.Declare(String, "")
+V.Local.sTemp.Declare(String, "")
+V.Local.sData.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.sFile.Declare(String, "")
+V.Local.sName.Declare(String, "")
+V.Local.sSlug.Declare(String, "")
+V.Local.sCreateUsr.Declare(String, "")
+V.Local.sImageLoc.Declare(String, "")
+V.Local.sType.Declare(String, "")
+V.Local.sMessage.Declare(String, "")
+V.Local.dCreateDate.Declare(Date, "01/01/1900")
+V.Local.iHead.Declare(Long, 1)
+V.Local.iHeadMax.Declare(Long, 0)
+V.Local.iWebID.Declare(Long, 0)
+V.Local.sHeadPath.Declare(String, "")
+V.Local.bHeadExist.Declare(Boolean, False)
+V.Local.bExist.Declare(Boolean, False)
+V.Local.iCounter.Declare(Long, 0)
+
+V.Local.iCounter.Set(V.Args.Count.Long)
+
+V.Local.sUser.Set("fquiroz")
+'V.Local.sPass.Set("WAUdKKFz&hDwxpmu*BFZ6h&P")
+V.Local.sPass.Set("pvI!)A08uQHShGE(Se4V%9o!")
+F.Intrinsic.String.Build("https://paragon.wp4.cazbah.us/wp-json/wp/v2/media?orderby=date&order=desc&page={0}", V.Local.iCounter, V.Local.sURL)
+'https://paragon.wp4.cazbah.us/wp-json/wp/v2/media
+'F.Intrinsic.String.Build("http://paragon.wp4.cazbah.us/wp-json/wp/v2/media?page={0}", V.Local.iCounter, V.Local.sURL)
+'V.Caller.LocalGSSTempDir
+F.Intrinsic.String.Build("{0}\{1}IMGS.json", V.Caller.TempDir, V.Caller.CompanyCode, V.Local.sFile)
+
+F.Communication.REST.SetProperty("HTTPMethod","GET")
+F.Communication.REST.SetProperty("User",V.Local.sUser)
+F.Communication.REST.SetProperty("Password",V.Local.sPass)
+F.Communication.REST.SetProperty("ContentType", "application/json; charset=utf-8")
+F.Communication.REST.SetProperty("Accept","application/json")
+F.Communication.REST.SetProperty("LocalFile", V.Local.sFile)
+F.Communication.REST.Config("SSLEnabledProtocols=4032",V.Local.sRet)
+
+F.Intrinsic.Control.Try
+	F.Communication.REST.Get(V.Local.sURL)
+F.Intrinsic.Control.Catch
+F.Intrinsic.Control.EndTry
+F.Communication.REST.DoEvents()
+F.Communication.REST.ReadProperty("TransferredData", V.Local.sData)
+
+F.Communication.JSON.ParseFile(V.Local.sFile)
+'From BIX ********************************************************************************************************************************************************
+F.Intrinsic.String.Build("/json/[{0}]",V.Local.iHead,V.Local.sHeadPath)
+F.Communication.JSON.HasXPath(V.Local.sHeadPath,V.Local.bHeadExist)
+F.Intrinsic.Control.DoUntil(V.Local.bHeadExist,=,False)
+	
+	F.Intrinsic.String.Build("Page Number {0}{1}{1}Item number in page {2}", V.Local.iCounter, V.Ambient.NewLine, V.Local.iHead, V.Local.sMessage)
+	F.Intrinsic.UI.ChangeWaitStatus(V.Local.sMessage)
+	
+	'Get the webID first. If we already have that recorded, we do not need to continue with that entry.
+	F.Intrinsic.String.Build("/json/[{0}]/id", V.Local.iHead, V.Local.sTemp)
+    F.Communication.JSON.SetProperty("XPath",V.Local.sTemp)
+    F.Communication.JSON.ReadProperty("XText",V.Local.sTemp)
+	V.Local.iWebID.Set(V.Local.sTemp.Long)
+	
+	F.Intrinsic.Control.If(V.Dictionary.dicMedia![V.Local.sTemp.Long], "=", -1)
+		'Image location
+		F.Intrinsic.String.Build("/json/[{0}]/source_url", V.Local.iHead, V.Local.sTemp)
+		F.Communication.JSON.SetProperty("XPath",V.Local.sTemp)
+		F.Communication.JSON.ReadProperty("XText",V.Local.sTemp)
+		F.Intrinsic.String.Replace(V.Local.sTemp, V.Ambient.DblQuote, "", V.Local.sTemp)
+		F.Intrinsic.String.Replace(V.Local.sTemp, "\/", "/", V.Local.sImageLoc)
+
+'		'Name
+		F.Intrinsic.String.Split(V.Local.sTemp, "\/", V.Local.sTemp)
+		V.Local.sName.Set(V.Local.sTemp(V.Local.sTemp.UBound))
+		
+		'There was a problem with images being duplicated whenever we attached them to an inventory part.
+		'I found a solution to avoid having these image names duplicated in GS by checking the Create User field
+		'Since all these duplicate images are generated whenever we create the link through the API, the user that gets recorded
+		'as creator is the username that we use here, so we check to see if the user created is this username, 
+		'and if it is, we are classifying it as a duplicate and do not bother adding it to the list of images.
+		'Once the configuration of the website changes for go live, we will have to update the user number.
+		
+		'Create User
+		F.Intrinsic.String.Build("/json/[{0}]/author", V.Local.iHead, V.Local.sTemp)
+		F.Communication.JSON.SetProperty("XPath",V.Local.sTemp)
+		F.Communication.JSON.ReadProperty("XText",V.Local.sTemp)
+		F.Intrinsic.String.Replace(V.Local.sTemp, V.Ambient.DblQuote, "", V.Local.sTemp)
+		F.Intrinsic.String.Replace(V.Local.sTemp, "\/", "/", V.Local.sCreateUsr)
+		
+		F.Intrinsic.Control.If(V.Local.sCreateUsr.Long, "<>", 28)
+			'Date Created
+			F.Intrinsic.String.Build("/json/[{0}]/date", V.Local.iHead, V.Local.sTemp)
+			F.Communication.JSON.SetProperty("XPath",V.Local.sTemp)
+			F.Communication.JSON.ReadProperty("XText",V.Local.sTemp)
+			F.Intrinsic.String.Split(V.Local.sTemp, "T", V.Local.sTemp)
+			F.Intrinsic.String.Replace(V.Local.sTemp(0), "-", "/", V.Local.sTemp)
+			F.Intrinsic.String.Replace(V.Local.sTemp, V.Ambient.DblQuote, "", V.Local.sTemp)
+	'		V.Local.sTemp.RedimPreserve(0,2)
+	'		F.Intrinsic.String.Right(V.Local.sTemp(0), 2, V.Local.sTemp(0))
+			F.Intrinsic.Date.ConvertDString(V.Local.sTemp, "YYYY/MM/DD", V.Local.dCreateDate)
+			
+			'Slug
+			F.Intrinsic.String.Build("/json/[{0}]/slug", V.Local.iHead, V.Local.sTemp)
+			F.Communication.JSON.SetProperty("XPath",V.Local.sTemp)
+			F.Communication.JSON.ReadProperty("XText",V.Local.sTemp)
+			F.Intrinsic.String.Replace(V.Local.sTemp, V.Ambient.DblQuote, "", V.Local.sTemp)
+			V.Local.sSlug.Set(V.Local.sTemp)
+			
+			'Type
+			F.Intrinsic.String.Build("/json/[{0}]/media_type", V.Local.iHead, V.Local.sTemp)
+			F.Communication.JSON.SetProperty("XPath",V.Local.sTemp)
+			F.Communication.JSON.ReadProperty("XText",V.Local.sTemp)
+			F.Intrinsic.String.Replace(V.Local.sTemp, V.Ambient.DblQuote, "", V.Local.sTemp)
+			V.Local.sType.Set(V.Local.sTemp)
+			
+			F.Data.DataTable.AddRow("dtGSImgs", "MediaWebID", V.Local.iWebID, "MediaName", V.Local.sName, "CreateDate", V.Local.dCreateDate, "MediaSlug", V.Local.sSlug, "MediaType", V.Local.sType, "MediaLoc", V.Local.sImageLoc, "NewEntry", True)
+	    	
+		F.Intrinsic.Control.EndIf
+		
+		F.Intrinsic.Math.Add(V.Local.iHead,1,V.Local.iHead)	
+		F.Intrinsic.String.Build("/json/[{0}]",V.Local.iHead,V.Local.sHeadPath)
+		F.Communication.JSON.HasXPath(V.Local.sHeadPath,V.Local.bHeadExist)
+		
+	F.Intrinsic.Control.Else
+		
+		V.Local.bHeadExist.Set(False)
+    F.Intrinsic.Control.EndIf
+    	
+F.Intrinsic.Control.Loop
+F.Intrinsic.Math.Sub(v.Local.iHead,1,V.Local.iHead)
+
+'The GET only returns 10 items at a time, so we check to see if the max was 11, then we would add one to the page counter so that it requests the next page over
+F.Intrinsic.Control.If(V.Local.iHead, =, 10)
+	F.Intrinsic.Math.Add(V.Local.iCounter, 1, V.Local.iCounter)
+	F.Intrinsic.Control.CallSub(WooInfo, "Count", V.Local.iCounter)
+F.Intrinsic.Control.EndIf
+
+'F.Intrinsic.Control.Catch
+'	F.Intrinsic.String.Concat("Project: GCG_5289_Image_Brow.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+'	F.Intrinsic.UI.Msgbox(V.Local.sError) 
+'	F.Intrinsic.Control.CallSub(Unload)
+'F.Intrinsic.Control.Endtry
+Program.Sub.WooInfo.End
+
+Program.Sub.GSInfo.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sTemp.Declare(String, "")
+
+F.ODBC.Connection!conx.OpenCompanyConnection
+
+'We are going to create a datatable with the info in GS so we have the customer entries that already exist and we can add the new entries.
+F.Data.DataTable.CreateFromSQL("dtGSImgs", "conx", "Select MediaWebID, MediaName, CreateDate, MediaSlug, MediaType, MediaLoc, Cast('0' as Bit) as NewEntry from GCG_5289_Web_Images", True)
+
+F.ODBC.Connection!conx.Close
+
+F.Data.Dictionary.CreateFromDataTable("dicMedia", "dtGSImgs", "MediaWebID", "MediaName")
+F.Data.Dictionary.SetDefaultReturn("dicMedia", "-1")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Concat("Project: GCG_5289_Image_Brow.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.Endtry
+Program.Sub.GSInfo.End
+
+Program.Sub.ProcessNewEntries.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+'Then we print to a text file to be picked up by the callwrapper/1shot thing
+'F.Intrinsic.Control.CallSub(6013Async)
+
+F.Data.DataTable.RemoveColumn("dtGSImgs", "NewEntry")
+F.ODBC.Connection!conx.OpenCompanyConnection
+F.Data.DataTable.SaveToDB("dtGSImgs", "conx", "GCG_5289_Web_Images", "MediaWebID", 256)
+F.ODBC.Connection!conx.Close
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Concat("Project: GCG_5289_Image_Brow.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload) 
+F.Intrinsic.Control.Endtry
+Program.Sub.ProcessNewEntries.End
+
+Program.Sub.Unload.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Concat("Project: GCG_5289_Image_Brow.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError) 
+F.Intrinsic.Control.Endtry
+Program.Sub.Unload.End
