@@ -1,0 +1,839 @@
+﻿Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sMessage.Declare(String, "")
+
+'This project will grab all the inventory that needs to be uploaded to the website and upload it using REST API functions.
+'We will probably need to set up flags for changes, so we only upload/update pending information
+'Created for Paragon by FEQ 11/26/2018. We will be using REST API functions
+
+'The customer wanted to add way to flag all parts as modified so that all pricing changes are passed on to the website parts: We can just add this script to a custom menu item and use the flag F for it
+F.Intrinsic.Control.If(V.Caller.Switches, =, "F")
+	F.ODBC.Connection!conx.OpenCompanyConnection
+	F.ODBC.Connection!conx.Execute("UPDATE GCG_5289_USER_FIELDS set MODIFIED = '1' where ONLINEFLAG = '1'")
+	F.ODBC.Connection!conx.Close
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!conx.OpenCompanyConnection
+'adding another SQL script to disable the online flag in the userfields table if the TEXT_INFO1 field does not have a YES in it. THis is what the customer is using to flag the part in GSS to state if it is in the website or no.
+F.ODBC.Connection!conx.Execute("UPDATE GCG_5289_USER_FIELDS SET ONLINEFLAG = 0 WHERE PART NOT IN (SELECT PART FROM INVENTORY_MST2 WHERE TEXT_INFO1 = 'YES');")	
+F.ODBC.Connection!conx.Close
+
+
+'This will be set up on the task scheduler as well as a custom menu item so they can run it when needed.
+'We first want to verify that all Categories have Category IDs
+F.Intrinsic.UI.InvokeWaitDialog("INVENTORY UPLOAD IN PROCESS")
+
+F.Intrinsic.Control.CallSub(GatherChangedInventory)
+
+'If this was ran fromt the custom menu item, it will send out a message when it is completed.
+F.Intrinsic.Control.If(V.Caller.Switches, =, "M")
+
+	F.Intrinsic.String.Build("The Inventory Upload to the website has been completed.{0}{0}{0}Check the Global/Custom/5289/ directory for files with information on any errors with inventory that was not passed correctly.", , V.Local.sMessage)
+	F.Intrinsic.UI.Msgbox(V.Local.sMessage, "PROCESS COMPLETE")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Unload.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.Unload.End
+
+Program.Sub.GatherChangedInventory.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+F.ODBC.Connection!conx.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("dtInventory", "conx", "Select UFID, PART, LOCATION, PART + '-' + LOCATION as PartLoc, PARTNAME, PARTDESC, ONLINEFLAG, MODIFIED, PARENT_CAT, LAYER1, LAYER2, NEW_FLAG, WEIGHT_LBS, LENGTH_IN, WIDTH_IN, HEIGHT_IN, WEB_ID from GCG_5289_USER_FIELDS where ONLINEFLAG = '1' and MODIFIED = '1'", True)
+
+F.Data.DataTable.AddColumn("dtInventory", "Success", "Boolean")
+F.Data.DataTable.AddColumn("dtInventory", "Pricing", "String")
+
+F.Intrinsic.Control.CallSub(PricingDictionary)
+'F.Intrinsic.Control.CallSub(Attributes)
+
+F.Data.DataTable.FillFromDictionary("dtInventory", "dicPrice", "PartLoc", "Pricing")
+
+'Filter for the new entries, these will use a specific kind of API function
+F.Data.DataView.Create("dtInventory", "dvNew", 22, "NEW_FLAG = 'True'", "")
+
+F.Intrinsic.Control.CallSub(PostingNewInv)
+
+'Filter for the modified entries that already exist, which will use another kind of API functions
+F.Data.DataView.Create("dtInventory", "dvModified", 22, "NEW_FLAG = 'False'", "")
+
+F.Intrinsic.Control.CallSub(ModifiedInv)
+
+F.Data.DataView.Create("dtInventory", "dvSuccess", 22, "[Success] = 'True'", "")
+F.Data.DataView.SetValue("dtInventory", "dvSuccess", -1, "Modified", "False", "NEW_FLAG", "False")
+
+F.Data.DataView.Close("dtInventory", "dvSuccess")
+F.Data.DataTable.RemoveColumn("dtInventory", "SUCCESS")
+F.Data.DataTable.RemoveColumn("dtInventory", "PartLoc")
+F.Data.DataTable.RemoveColumn("dtInventory", "Pricing")
+
+'We are saving entries individually for now, due to the lack of error handling on the REST API functions
+'F.Data.DataTable.SaveToDB("dtInventory", "conx", "GCG_5289_USER_FIELDS", "UFID", 256)
+
+F.ODBC.Connection!conx.Close
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.GatherChangedInventory.End
+
+Program.Sub.PostingNewInv.Start
+'F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sName.Declare(String, "")
+V.Local.sDescription.Declare(String, "")
+V.Local.sCategory.Declare(String, "")
+V.Local.sFile.Declare(String, "")
+V.Local.iChocula.Declare(Long, 0)
+V.Local.sPrice.Declare(String, "")
+V.Local.sBody.Declare(String, "")
+V.Local.sUser.Declare(String, "")
+V.Local.sPassword.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+V.Local.sFoCats.Declare(String, "")
+V.Local.sTemp.Declare(String, "")
+V.Local.sTest.Declare(String, "")
+V.Local.sID.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.sPartsNotPassed.Declare(String, "")
+V.Local.iErrorCount.Declare(Long, 0)
+V.Local.sErrorFile.Declare(String, "")
+V.Local.sFileDir.Declare(String, "")
+V.Local.sDateString.Declare(String, "")
+V.Local.sEncoding.Declare(String, "")
+V.Local.sSql.Declare(String, "")
+V.Local.sImages.Declare(String, "")
+V.Local.sFoImgs.Declare(String, "")
+V.Local.sMessage.Declare(String, "")
+V.Local.sDims.Declare(String, "")
+V.Local.sKilnBod.Declare(String, "")
+
+'We create a table from the InvCategory table that has all the inventory categories. This is done because inventory could have more than one category
+F.Data.DataTable.CreateFromSQL("dtInvCat", "conx", "Select Part, Loc, '@!@' as Sub, Category_ID from GCG_5289_InvCategory")
+F.Data.DataTable.CreateFromSQL("dtInvImg", "conx", "Select Part, Loc, '@!@' as Sub, ImageName, MediaWebID, Autonum from GCG_5289_InvImages")
+F.Data.Dictionary.CreateFromSQL("dicImgs", "conx", "Select MediaWebID, MediaLoc from GCG_5289_Web_Images")
+F.Data.Dictionary.SetDefaultReturn("dicImgs", "")
+F.Data.DataTable.AddColumn("dtInvImg", "ImgLoc", "String")
+F.Data.DataTable.FillFromDictionary("dtInvImg", "dicImgs", "MediaWebID", "ImgLoc")
+F.Data.Dictionary.Close("dicImgs")
+
+'V.Local.sUser.Set("FEQ")
+'V.Local.sPassword.Set("n$M$X9RC4s&ya)5XFUZHmHn6")
+
+V.Local.sUser.Set("gssimport")
+V.Local.sPassword.Set("$Gl0balSh0p-Parag0n!")
+
+'F.Communication.REST.SetProperty("HTTPMethod","POST")
+'F.Communication.REST.SetProperty("User",V.Local.sUser)
+'F.Communication.REST.SetProperty("Password",V.Local.sPassword)
+''F.Communication.REST.SetProperty("LocalFile","C:\users\fquiroz\Desktop\RestGAB.txt")
+'F.Communication.REST.SetProperty("ContentType", "application/json; charset=utf-8")
+'F.Communication.REST.SetProperty("Accept","application/json")
+
+'sFoCats will be used to create the category object that is passed in the JSon file to create the inventory part.
+F.Intrinsic.String.Build("{0}id{0}", V.Ambient.DblQuote, V.Local.sFoCats)
+
+'7/17 Mod. Request by PJ. Use ID instead of Location to create the link to the image to avoid duplicating images
+'F.Intrinsic.String.Build("{0}src{0}:{0}", V.Ambient.DblQuote, V.Local.sFoImgs)
+F.Intrinsic.String.Build("{0}id{0}:{0}", V.Ambient.DblQuote, V.Local.sFoImgs)
+
+F.Intrinsic.Control.For(V.Local.iChocula, 0, V.DataView.dtInventory!dvNew.RowCount--, 1)
+	'We have to pass the categories as an object. If an item has multiple categories, we type them as an "Object"
+	F.Intrinsic.String.Build("[Part] = '{0}' and [Loc] = '{1}'", V.DataView.dtInventory!dvNew(V.Local.iChocula).PART!FieldValTrim, V.DataView.dtInventory!dvNew(V.Local.iChocula).LOCATION!FieldValTrim, V.Local.sFilter)
+	
+	F.Intrinsic.String.Build("{0} out of {1}: UFID = {2}{3}{3}{4}", V.Local.iChocula, V.DataView.dtInventory!dvNew.RowCount--, V.DataView.dtInventory!dvNew(V.Local.iChocula).UFID!FieldValTrim, V.Ambient.NewLine, V.DataView.dtInventory!dvNew(V.Local.iChocula).PART!FieldValTrim, V.Local.sMessage)
+	F.Intrinsic.UI.ChangeWaitStatus(V.Local.sMessage)	
+	
+	F.Data.DataView.Create("dtInVCat", "dvCats", 22, V.Local.sFilter, "")
+	F.Intrinsic.Control.If(V.DataView.dtInVCat!dvCats.RowCount, >, 0)
+		F.Data.DataView.ToString("dtInVCat", "dvCats", "SUB*!*CATEGORY_ID", ":", "},{", V.Local.sCategory)
+		F.Intrinsic.String.Replace(V.Local.sCategory, "@!@", V.Local.sFoCats, V.Local.sCategory)
+		F.Intrinsic.String.Build(", {0}categories{0}: [{{1}}]", V.Ambient.DblQuote, V.Local.sCategory, V.Local.sCategory)
+	F.Intrinsic.Control.Else
+		V.Local.sCategory.Set("")
+	F.Intrinsic.Control.EndIf
+	F.Data.DataView.Close("dtInVCat", "dvCats")
+	
+	F.Data.DataView.Create("dtInvImg", "dvImgs", 22, V.Local.sFilter, "Autonum ASC")
+	F.Intrinsic.Control.If(V.DataView.dtInVImg!dvImgs.RowCount, >, 0)
+'		F.Data.DataView.ToString("dtInVImg", "dvImgs", "SUB*!*IMAGENAME", "", "!*!},{", V.Local.sImages)
+		'7/17 Mod. Request by PJ. Use ID instead of Location to create the link to the image to avoid duplicating images
+'		F.Data.DataView.ToString("dtInVImg", "dvImgs", "SUB*!*IMGLOC", "", "!*!},{", V.Local.sImages)
+		F.Data.DataView.ToString("dtInVImg", "dvImgs", "SUB*!*MEDIAWEBID", "", "!*!},{", V.Local.sImages)
+		F.Intrinsic.String.Replace(V.Local.sImages, "@!@", V.Local.sFoImgs, V.Local.sImages)
+		F.Intrinsic.String.Replace(V.Local.sImages, "!*!", V.Ambient.DblQuote, V.Local.sImages)
+		F.Intrinsic.String.Build(", {0}images{0}: [{{1}{0}}]", V.Ambient.DblQuote, V.Local.sImages, V.Local.sImages)
+	F.Intrinsic.Control.Else
+		V.Local.sImages.Set("")
+	F.Intrinsic.Control.EndIf
+	
+	
+'	'We are not worried about images right now****************************************************************************************************
+'	V.Local.sImages.Set("")
+'	'*******************************************************************************************************************************************************
+	F.Data.DataView.Close("dtInVImg", "dvImgs")
+	
+	'At the time of creation, GAB is unable to read/identify left and right double quotes, and the customer is using them, so to get around these, we encode to URL, and replace the values with those of regular double quotes, and then decode back to a regular string.
+	
+	F.Intrinsic.Control.CallSub(SpecialCheck, "Value", V.DataView.dtInventory!dvNew(V.Local.iChocula).PARTDESC!FieldValTrim)
+	V.Local.sDescription.Set(V.Args.Return)
+	F.Intrinsic.Control.CallSub(SpecialCheck, "Value", V.DataView.dtInventory!dvNew(V.Local.iChocula).PARTNAME!FieldValTrim)
+	V.Local.sName.Set(V.Args.Return)
+	
+	F.Intrinsic.String.Format(V.DataView.dtInventory!dvNew(V.Local.iChocula).Pricing!FieldValFloat, "#######.00", V.Local.sPrice)
+	
+	F.Intrinsic.String.Build("{{0}name{0}:{0}{1}{0}, {0}type{0}: {0}simple{0}, ", V.Ambient.DblQuote, V.Local.sName, V.Local.sBody)
+	F.Intrinsic.String.Build("{1}{0}description{0}: {0}{2}{0}, {0}regular_price{0}: {0}{3}{0}, ", V.Ambient.DblQuote, V.Local.sBody, V.Local.sDescription, V.Local.sPrice, V.Local.sBody)
+	
+	'We need to add dimensions to the upload
+	F.Intrinsic.String.Build("{0}dimensions{0}:{{0}length{0}:{0}{1}{0}, {0}width{0}:{0}{2}{0}, {0}height{0}:{0}{3}{0}}, ", V.Ambient.DblQuote, V.DataView.dtInventory!dvNew(V.Local.iChocula).LENGTH_IN!FieldValFloat, V.DataView.dtInventory!dvNew(V.Local.iChocula).WIDTH_IN!FieldValFloat, V.DataView.dtInventory!dvNew(V.Local.iChocula).HEIGHT_IN!FieldValFloat, V.Local.sDims)
+	
+	F.Intrinsic.String.Build("{1}{0}weight{0}: {0}{2}{0}, {3}", V.Ambient.DblQuote, V.Local.sBody, V.DataView.dtInventory!dvNew(V.Local.iChocula).WEIGHT_LBS!FieldValFloat, V.Local.sDims, V.Local.sBody)
+'	F.Intrinsic.String.Build("{1}{0}sku{0}:{0}{2}{0}, {0}categories{0}: [{{3}}]}", V.Ambient.DblQuote, V.Local.sBody, V.DataView.dtInventory!dvNew(V.Local.iChocula).PART!FieldValTrim, V.Local.sCategory, V.Local.sBody)
+	
+	'We probably need to add a check to see if the inventory part is a kiln, but for now we just check every time.
+	F.Intrinsic.Control.CallSub(KilnFields, "PartNo", V.DataView.dtInventory!dvNew(V.Local.iChocula).PART!FieldValTrim, "Loc", V.DataView.dtInventory!dvNew(V.Local.iChocula).LOCATION!FieldValTrim)
+	
+	F.Intrinsic.String.Build("{1}{0}sku{0}:{0}{2}{0}{3}{4}{5}}", V.Ambient.DblQuote, V.Local.sBody, V.DataView.dtInventory!dvNew(V.Local.iChocula).PART!FieldValTrim, V.Local.sCategory, V.Local.sImages, V.Args.KilnBody, V.Local.sBody)
+	
+	'Because of the weird characters that they are creating by copying/pasting stuff into the description, we will be saving to a ".json" file and reading it back in order to encrypt it correctly
+	F.Intrinsic.String.Build("{0}\{1}APITemp.json", V.Caller.TempDir, V.Caller.CompanyCode, V.Local.sFile)
+	F.Intrinsic.File.String2File(V.Local.sFile, V.Local.sBody)
+	F.Intrinsic.File.File2String(V.Local.sFile, V.Local.sBody)
+	
+	F.Communication.REST.SetProperty("HTTPMethod","POST")
+	F.Communication.REST.SetProperty("User",V.Local.sUser)
+	F.Communication.REST.SetProperty("Password",V.Local.sPassword)
+	'F.Communication.REST.SetProperty("LocalFile","C:\users\fquiroz\Desktop\RestGAB.txt")
+	F.Communication.REST.SetProperty("ContentType", "application/json; charset=utf-8")
+	F.Communication.REST.SetProperty("Accept","application/json")
+	
+	F.Communication.REST.Config("SSLEnabledProtocols=4032",V.Local.sRet)
+	F.Communication.REST.SetProperty("PostData", V.Local.sBody)
+	
+'	V.Local.sTest.Set("https://paragon.wp4.cazbah.us/wp-json/wc/v2/products")
+'	V.Local.sTest.Set("https://dev-pishop.pantheonsite.io/wp-json/wc/v3/products")
+'	V.Local.sTest.Set("http://localhost/wordpress/wp-json/wc/v2/products")
+	'V.Local.sTest.Set("https://live-pishop.pantheonsite.io/wp-json/wc/v3/products")
+	V.Local.sTest.Set("https://shop.paragonweb.com/wp-json/wc/v3/products")
+	
+	F.Intrinsic.Control.Try
+		'testing stuff ****************************************************************************
+'		
+		F.Communication.REST.Post(V.Local.sTest)
+'		
+		F.Communication.REST.DoEvents()
+		F.Communication.REST.ReadProperty("TransferredData", V.Local.sTemp)
+	'	F.Intrinsic.String.Build(",{0}", V.Ambient.DblQuote, V.Local.sName)
+	'	F.Intrinsic.String.Replace(V.Local.sTemp, V.Local.sName, V.Ambient.NewLine, V.Local.sTemp)
+		F.Intrinsic.String.Split(V.Local.sTemp, ":", V.Local.sName)
+		F.Intrinsic.String.Split(V.Local.sName(1), ",", V.Local.sID)
+		
+		'Sadly, because the error handling in the REST API functions still needs some fine tuning, we are going to be writing to the table after every successful interaction. Otherwise all teh updated stuff gets lost because OCTSRS crashes
+		F.Intrinsic.String.Build("UPDATE GCG_5289_USER_FIELDS set WEB_ID = '{0}', MODIFIED = '0', NEW_FLAG = '0' where UFID = '{1}'", V.Local.sID(0).Long,  V.DataView.dtInventory!dvNew(V.Local.iChocula).UFID!FieldValTrim, V.Local.sSql)
+		F.ODBC.Connection!conx.Execute(V.Local.sSql)
+				
+		'If the REST API stuff is ever fixed, we should be able to just update the table and save at the end of the program
+'		F.Data.DataView.SetValue("dtInventory", "dvNew", V.Local.iChocula, "WEB_ID", V.Local.sID(0).Long, "SUCCESS", "True")
+		
+	F.Intrinsic.Control.Catch
+			
+		F.Intrinsic.Math.Add(V.Local.iErrorCount, 1, V.Local.iErrorCount)
+		F.Intrinsic.String.Build("{0}{1}{4}{5}{2}{4}{5}{3}{4}{4}{4}", V.Local.sPartsNotPassed, V.DataView.dtInventory!dvNew(V.Local.iChocula).PARTNAME!FieldValTrim, V.Local.sDescription, V.Local.sBody, V.Ambient.NewLine, V.Ambient.Tab, V.Local.sPartsNotPassed)
+
+	F.Intrinsic.Control.EndTry
+	
+F.Intrinsic.Control.Next(V.Local.iChocula)
+
+F.Intrinsic.Control.If(V.Local.iErrorCount, >, 0)
+
+	F.Intrinsic.String.Build("Number of errors encountered: {0}{1}{1}{1}{1}{2}", V.Local.iErrorCount, V.Ambient.NewLine, V.Local.sPartsNotPassed, V.Local.sErrorFile)
+	F.Intrinsic.String.Replace(V.Ambient.Date.DDMMYY, "/", "", V.Local.sDateString)
+	F.Intrinsic.String.Split(V.Local.sdatestring, " ", V.Local.sdatestring)
+	V.Local.sdatestring.RedimPreserve(0,1)
+	F.Intrinsic.String.Build("{0}\Custom\5289\{1}{2}invUploadErrs.txt", V.Caller.GlobalDir, V.Caller.CompanyCode, V.Local.sdatestring(0), V.Local.sFileDir)
+	
+	F.Intrinsic.File.String2File(V.Local.sFileDir, V.Local.sErrorFile)
+
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Close("dtInVCat")
+F.Data.DataTable.Close("dtInVImg")
+Program.Sub.PostingNewInv.End
+
+Program.Sub.ModifiedInv.Start
+V.Local.sError.Declare(String, "")
+V.Local.sName.Declare(String, "")
+V.Local.sDescription.Declare(String, "")
+V.Local.sCategory.Declare(String, "")
+V.Local.sImages.Declare(String, "")
+V.Local.sPrice.Declare(String, "")
+V.Local.sFile.Declare(String, "")
+V.Local.iChocula.Declare(Long, 0)
+V.Local.sBody.Declare(String, "")
+V.Local.sUser.Declare(String, "")
+V.Local.sPassword.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+V.Local.sFoCats.Declare(String, "")
+V.Local.sFoImgs.Declare(String, "")
+V.Local.sTemp.Declare(String, "")
+V.Local.sTest.Declare(String, "")
+V.Local.sID.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.sPartsNotPassed.Declare(String, "")
+V.Local.sKilnBod.Declare(String, "")
+V.Local.iErrorCount.Declare(Long, 0)
+V.Local.sErrorFile.Declare(String, "")
+V.Local.sFileDir.Declare(String, "")
+V.Local.sDateString.Declare(String, "")
+V.Local.sEncoding.Declare(String, "")
+V.Local.sMessage.Declare(String, "")
+V.Local.sSql.Declare(String, "")
+V.Local.sDims.Declare(String, "")
+V.Local.sReport.Declare(String, "")
+V.Local.sMissing.Declare(String, "")
+V.Local.sLengthtcheck.Declare(String, "")
+
+'We create a table from the InvCategory table that has all the inventory categories. This is done because inventory could have more than one category
+F.Data.DataTable.CreateFromSQL("dtInvCat", "conx", "Select Part, Loc, '@!@' as Sub, Category_ID from GCG_5289_InvCategory")
+F.Data.DataTable.CreateFromSQL("dtInvImg", "conx", "Select Part, Loc, '@!@' as Sub, ImageName, MediaWebID, Autonum from GCG_5289_InvImages")
+F.Data.Dictionary.CreateFromSQL("dicImgs", "conx", "Select MediaWebID, MediaLoc from GCG_5289_Web_Images")
+F.Data.Dictionary.SetDefaultReturn("dicImgs", "")
+F.Data.DataTable.AddColumn("dtInvImg", "ImgLoc", "String")
+F.Data.DataTable.FillFromDictionary("dtInvImg", "dicImgs", "MediaWebID", "ImgLoc")
+F.Data.Dictionary.Close("dicImgs")
+
+F.Intrinsic.String.Build("{0} out of {1}", V.Local.iChocula, V.DataView.dtInventory!dvModified.RowCount--, V.Local.sMessage)
+'F.Intrinsic.UI.InvokeWaitDialog(V.Local.sMessage)
+
+'V.Local.sUser.Set("FEQ")
+'V.Local.sPassword.Set("n$M$X9RC4s&ya)5XFUZHmHn6")
+
+'V.Local.sUser.Set("fquiroz")
+''V.Local.sPassword.Set("WAUdKKFz&hDwxpmu*BFZ6h&P")
+'V.Local.sPassword.Set("pvI!)A08uQHShGE(Se4V%9o!")
+
+'F.Communication.REST.SetProperty("HTTPMethod","PUT")
+'F.Communication.REST.SetProperty("User",V.Local.sUser)
+'F.Communication.REST.SetProperty("Password",V.Local.sPassword)
+''F.Communication.REST.SetProperty("LocalFile","C:\users\fquiroz\Desktop\RestGAB.txt")
+'F.Communication.REST.SetProperty("ContentType", "application/json; charset=utf-8")
+'F.Communication.REST.SetProperty("Accept","application/json")
+
+V.Local.sUser.Set("gssimport")
+'V.Local.sPassword.Set("WAUdKKFz&hDwxpmu*BFZ6h&P")
+V.Local.sPassword.Set("$Gl0balSh0p-Parag0n!")
+
+'sFoCats will be used to create the category object that is passed in the JSon file to create the inventory part.
+F.Intrinsic.String.Build("{0}id{0}", V.Ambient.DblQuote, V.Local.sFoCats)
+
+'7/17 Mod. Request by PJ. Use ID instead of Location to create the link to the image to avoid duplicating images
+'F.Intrinsic.String.Build("{0}src{0}:{0}", V.Ambient.DblQuote, V.Local.sFoImgs)
+F.Intrinsic.String.Build("{0}id{0}:{0}", V.Ambient.DblQuote, V.Local.sFoImgs)
+
+F.Intrinsic.File.MakeFilenameFriendly(V.Ambient.Now, V.Local.sReport)
+F.Intrinsic.String.Build("\\Erpserver\apps\Global\PLUGINS\GAB\GAS\WebTesting\PartsMissing\{0}.txt", V.Local.sReport, V.Local.sReport)
+
+F.Intrinsic.Control.For(V.Local.iChocula, 0, V.DataView.dtInventory!dvModified.RowCount--, 1)
+	
+'	F.Intrinsic.String.Build("{0} out of {1}: UFID = {2}", V.Local.iChocula, V.DataView.dtInventory!dvModified.RowCount--, V.DataView.dtInventory!dvModified(V.Local.iChocula).UFID!FieldValTrim, V.Local.sMessage)
+'	F.Intrinsic.UI.ChangeWaitStatus(V.Local.sMessage)
+	V.Local.sLengthtcheck.Set(V.DataView.dtInventory!dvModified(V.Local.iChocula).Length_IN!FieldValTrim)
+	'Minor issue when switching to live. For some reason parts that dont have measurements recorded in Global Shop dont seem to have been copied over to the new website, and when trying to update, the lovely error handling crashes the OCTSRS. Therefore we are just going to check that the weight exists before we try to upload it.
+'	F.Intrinsic.Control.If(V.DataView.dtInventory!dvModified(V.Local.iChocula).Weight_lbs!FieldValTrim, =, "")
+'		'Report the part and avoid trying to upload it
+'		F.Intrinsic.String.Build("{0}Part:{1}, WebID:{2}{3}", V.Local.sMissing, V.DataView.dtInventory!dvModified(V.Local.iChocula).PART!FieldValTrim, V.DataView.dtInventory!dvModified(V.Local.iChocula).WEB_ID!FieldValTrim, V.Ambient.NewLine, V.Local.sMissing)
+'		F.Intrinsic.File.String2File(V.Local.sReport, V.Local.sMissing)
+'	
+'	F.Intrinsic.Control.ElseIf(V.DataView.dtInventory!dvModified(V.Local.iChocula).Pricing!FieldValLong, =, 0)
+'		F.Intrinsic.String.Build("{0}Part:{1}, WebID:{2}{3}", V.Local.sMissing, V.DataView.dtInventory!dvModified(V.Local.iChocula).PART!FieldValTrim, V.DataView.dtInventory!dvModified(V.Local.iChocula).WEB_ID!FieldValTrim, V.Ambient.NewLine, V.Local.sMissing)
+'		F.Intrinsic.File.String2File(V.Local.sReport, V.Local.sMissing)
+'		
+'	F.Intrinsic.Control.ElseIf(V.Local.sLengthtcheck.Long, =, 0)
+'		F.Intrinsic.String.Build("{0}Part:{1}, WebID:{2}{3}", V.Local.sMissing, V.DataView.dtInventory!dvModified(V.Local.iChocula).PART!FieldValTrim, V.DataView.dtInventory!dvModified(V.Local.iChocula).WEB_ID!FieldValTrim, V.Ambient.NewLine, V.Local.sMissing)
+'		F.Intrinsic.File.String2File(V.Local.sReport, V.Local.sMissing)
+'		
+'	F.Intrinsic.Control.Else
+'		
+		F.Intrinsic.String.Build("{0} out of {1}: UFID = {2}{3}{3}{4}", V.Local.iChocula, V.DataView.dtInventory!dvModified.RowCount--, V.DataView.dtInventory!dvModified(V.Local.iChocula).UFID!FieldValTrim, V.Ambient.NewLine, V.DataView.dtInventory!dvModified(V.Local.iChocula).PART!FieldValTrim, V.Local.sMessage)
+		F.Intrinsic.UI.ChangeWaitStatus(V.Local.sMessage)	
+		
+		'We have to pass the categories as an object. If an item has multiple categories, we type them as an "Object"
+		F.Intrinsic.String.Build("[Part] = '{0}' and [Loc] = '{1}'", V.DataView.dtInventory!dvModified(V.Local.iChocula).PART!FieldValTrim, V.DataView.dtInventory!dvModified(V.Local.iChocula).LOCATION!FieldValTrim, V.Local.sFilter)
+		
+		F.Data.DataView.Create("dtInVCat", "dvCats", 22, V.Local.sFilter, "")
+		F.Intrinsic.Control.If(V.DataView.dtInVCat!dvCats.RowCount, >, 0)
+			F.Data.DataView.ToString("dtInVCat", "dvCats", "SUB*!*CATEGORY_ID", ":", "},{", V.Local.sCategory)
+			F.Intrinsic.String.Replace(V.Local.sCategory, "@!@", V.Local.sFoCats, V.Local.sCategory)
+			F.Intrinsic.String.Build(", {0}categories{0}: [{{1}}]", V.Ambient.DblQuote, V.Local.sCategory, V.Local.sCategory)
+		F.Intrinsic.Control.Else
+			V.Local.sCategory.Set("")
+		F.Intrinsic.Control.EndIf
+		F.Data.DataView.Close("dtInVCat", "dvCats")
+			
+		F.Data.DataView.Create("dtInvImg", "dvImgs", 22, V.Local.sFilter, "Autonum ASC")
+		F.Intrinsic.Control.If(V.DataView.dtInVImg!dvImgs.RowCount, >, 0)
+	'		F.Data.DataView.ToString("dtInVImg", "dvImgs", "SUB*!*IMAGENAME", "", "!*!},{", V.Local.sImages)
+			'7/17 Mod. Request by PJ. Use ID instead of Location to create the link to the image to avoid duplicating images
+	'		F.Data.DataView.ToString("dtInVImg", "dvImgs", "SUB*!*IMGLOC", "", "!*!},{", V.Local.sImages)
+			F.Data.DataView.ToString("dtInVImg", "dvImgs", "SUB*!*MEDIAWEBID", "", "!*!},{", V.Local.sImages)
+			F.Intrinsic.String.Replace(V.Local.sImages, "@!@", V.Local.sFoImgs, V.Local.sImages)
+			F.Intrinsic.String.Replace(V.Local.sImages, "!*!", V.Ambient.DblQuote, V.Local.sImages)
+			F.Intrinsic.String.Build(", {0}images{0}: [{{1}{0}}]", V.Ambient.DblQuote, V.Local.sImages, V.Local.sImages)
+		F.Intrinsic.Control.Else
+			V.Local.sImages.Set("")
+		F.Intrinsic.Control.EndIf
+		F.Data.DataView.Close("dtInVImg", "dvImgs")
+			
+		'At the time of creation, GAB is unable to read/identify left and right double quotes, and the customer is using them, so to get around these, we encode to URL, and replace the values with those of regular double quotes, and then decode back to a regular string.
+		
+		F.Intrinsic.Control.CallSub(SpecialCheck, "Value", V.DataView.dtInventory!dvModified(V.Local.iChocula).PARTDESC!FieldValTrim)
+		V.Local.sDescription.Set(V.Args.Return)
+		F.Intrinsic.Control.CallSub(SpecialCheck, "Value", V.DataView.dtInventory!dvModified(V.Local.iChocula).PARTNAME!FieldValTrim)
+		V.Local.sName.Set(V.Args.Return)
+		
+		F.Intrinsic.Control.CallSub(KilnFields, "PartNo", V.DataView.dtInventory!dvModified(V.Local.iChocula).PART!FieldValTrim, "Loc", V.DataView.dtInventory!dvModified(V.Local.iChocula).LOCATION!FieldValTrim)
+		
+		'TEsting the metadata stuff
+	'	F.Intrinsic.String.Build(", {0}meta_data{0}:[{0}gss_part_number{0}:{0}{1}{0}]", V.Ambient.DblQuote, V.DataView.dtInventory!dvModified(V.Local.iChocula).PART!FieldValTrim, V.Local.sKilnBod)
+		
+		F.Intrinsic.String.Format(V.DataView.dtInventory!dvModified(V.Local.iChocula).Pricing!FieldValFloat, "#######0.00", V.Local.sPrice)
+		
+		F.Intrinsic.String.Build("{{0}name{0}:{0}{1}{0}, {0}type{0}: {0}simple{0}, ", V.Ambient.DblQuote, V.Local.sName, V.Local.sBody)
+		F.Intrinsic.String.Build("{1}{0}description{0}: {0}{2}{0}, {0}regular_price{0}: {0}{3}{0}, ", V.Ambient.DblQuote, V.Local.sBody, V.Local.sDescription, V.Local.sPrice, V.Local.sBody)
+		
+		F.Intrinsic.String.Build("{0}dimensions{0}:{{0}length{0}:{0}{1}{0}, {0}width{0}:{0}{2}{0}, {0}height{0}:{0}{3}{0}}, ", V.Ambient.DblQuote, V.DataView.dtInventory!dvModified(V.Local.iChocula).LENGTH_IN!FieldValFloat, V.DataView.dtInventory!dvModified(V.Local.iChocula).WIDTH_IN!FieldValFloat, V.DataView.dtInventory!dvModified(V.Local.iChocula).HEIGHT_IN!FieldValFloat, V.Local.sDims)
+		
+		F.Intrinsic.String.Build("{1}{0}weight{0}: {0}{2}{0}, {3}", V.Ambient.DblQuote, V.Local.sBody, V.DataView.dtInventory!dvModified(V.Local.iChocula).WEIGHT_LBS!FieldValFloat, V.Local.sDims, V.Local.sBody)
+		
+		F.Intrinsic.String.Build("{1}{0}sku{0}:{0}{2}{0}{3}{4}{5}}", V.Ambient.DblQuote, V.Local.sBody, V.DataView.dtInventory!dvModified(V.Local.iChocula).PART!FieldValTrim, V.Local.sCategory, V.Local.sImages, V.Args.KilnBody, V.Local.sBody)
+		
+		'Because of the weird characters that they are creating by copying/pasting stuff into the description, we will be saving to a ".json" file and reading it back in order to encrypt it correctly
+		F.Intrinsic.String.Build("{0}\{1}APITemp.json", V.Caller.TempDir, V.Caller.CompanyCode, V.Local.sFile)
+		F.Intrinsic.File.String2File(V.Local.sFile, V.Local.sBody)
+		F.Intrinsic.File.File2String(V.Local.sFile, V.Local.sBody)
+		
+		F.Communication.REST.SetProperty("HTTPMethod","PUT")
+		F.Communication.REST.SetProperty("User",V.Local.sUser)
+		F.Communication.REST.SetProperty("Password",V.Local.sPassword)
+		F.Communication.REST.SetProperty("ContentType", "application/json; charset=utf-8")
+		F.Communication.REST.SetProperty("Accept","application/json")
+		
+		F.Communication.REST.Config("SSLEnabledProtocols=4032",V.Local.sRet)
+		F.Communication.REST.SetProperty("PostData", V.Local.sBody)
+		
+	'	F.Intrinsic.String.Build("https://paragon.wp4.cazbah.us/wp-json/wc/v2/products/{0}", V.DataView.dtInventory!dvModified(V.Local.iChocula).WEB_ID!FieldValLong, V.Local.sTest)
+	'	F.Intrinsic.String.Build("https://dev-pishop.pantheonsite.io/wp-json/wc/v3/products/{0}", V.DataView.dtInventory!dvModified(V.Local.iChocula).WEB_ID!FieldValLong, V.Local.sTest)
+		'F.Intrinsic.String.Build("https://live-pishop.pantheonsite.io/wp-json/wc/v3/products/{0}", V.DataView.dtInventory!dvModified(V.Local.iChocula).WEB_ID!FieldValLong, V.Local.sTest)
+		F.Intrinsic.String.Build("https://shop.paragonweb.com/wp-json/wc/v3/products/{0}", V.DataView.dtInventory!dvModified(V.Local.iChocula).WEB_ID!FieldValLong, V.Local.sTest)
+		
+		F.Intrinsic.Control.Try
+			
+			F.Communication.REST.Put(V.Local.sTest)
+			
+			F.Communication.REST.DoEvents()
+			F.Communication.REST.ReadProperty("TransferredData", V.Local.sTemp)
+		'	F.Intrinsic.String.Build(",{0}", V.Ambient.DblQuote, V.Local.sName)
+		'	F.Intrinsic.String.Replace(V.Local.sTemp, V.Local.sName, V.Ambient.NewLine, V.Local.sTemp)
+		
+			F.Intrinsic.String.Split(V.Local.sTemp, ":", V.Local.sName)
+			F.Intrinsic.String.Split(V.Local.sName(1), ",", V.Local.sID)
+			
+	'		F.Data.DataView.SetValue("dtInventory", "dvModified", V.Local.iChocula, "Success", "True")
+			F.Intrinsic.String.Build("UPDATE GCG_5289_USER_FIELDS set MODIFIED = '0', NEW_FLAG = '0' where UFID = '{0}'", V.DataView.dtInventory!dvModified(V.Local.iChocula).UFID!FieldValTrim, V.Local.sSql)
+			F.ODBC.Connection!conx.Execute(V.Local.sSql)
+		
+		F.Intrinsic.Control.Catch
+			'We capture entries that have errors to print them into a file at the end of the subroutine.
+			F.Intrinsic.Math.Add(V.Local.iErrorCount, 1, V.Local.iErrorCount)
+			F.Intrinsic.String.Build("{0}{1}{4}{5}{2}{4}{5}{3}{4}{4}{4}", V.Local.sPartsNotPassed, V.DataView.dtInventory!dvModified(V.Local.iChocula).PARTNAME!FieldValTrim, V.Local.sDescription, V.Local.sBody, V.Ambient.NewLine, V.Ambient.Tab, V.Local.sPartsNotPassed)
+	
+		F.Intrinsic.Control.EndTry
+'	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.Next(V.Local.iChocula)
+
+F.Intrinsic.UI.CloseWaitDialog
+
+F.Intrinsic.Control.If(V.Local.iErrorCount, >, 0)
+	'If we had any errors, we will print them into the \Custom\5289\ folder
+	F.Intrinsic.String.Build("Number of errors encountered: {0}{1}{1}{1}{1}{2}", V.Local.iErrorCount, V.Ambient.NewLine, V.Local.sPartsNotPassed, V.Local.sErrorFile)
+	F.Intrinsic.String.Replace(V.Ambient.Date.DDMMYY, "/", "", V.Local.sDateString)
+	F.Intrinsic.String.Split(V.Local.sdatestring, " ", V.Local.sdatestring)
+	V.Local.sdatestring.RedimPreserve(0,1)
+	F.Intrinsic.String.Build("{0}\Custom\5289\{1}{2}ModifiedInvUploadErrs.txt", V.Caller.GlobalDir, V.Caller.CompanyCode, V.Local.sdatestring(0), V.Local.sFileDir)
+	
+	F.Intrinsic.File.String2File(V.Local.sFileDir, V.Local.sErrorFile)
+
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Close("dtInVCat")
+F.Data.DataTable.Close("dtInVImg")
+Program.Sub.ModifiedInv.End
+
+Program.Sub.PricingDictionary.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+
+'We are creating a dictionary that will pull in inventory pricing, and anything that is going to be created or updated on the website will have the pricing updated
+F.Data.Dictionary.CreateFromSQL("dicPrice", "conx", "Select Part + '-' + Location, AMT_PRICE from V_INVENTORY_MSTR")
+'F.Data.Dictionary.SetDefaultReturn("dicPrice", "50.000")
+F.Data.Dictionary.SetDefaultReturn("dicPrice", "0.000")
+
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Concat("Project: GCG_5470_ARCustomerNotes.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.Endtry
+Program.Sub.PricingDictionary.End
+
+Program.Sub.SpecialCheck.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.bExists.Declare(Boolean, False)
+V.Local.sEncoding.Declare(String, "")
+V.Local.sDescription.Declare(String, "")
+
+'We are using this subrioutine to encode the description and the the part name, since they enjoy copying and pasting stuff from questionable sources and some special characters break the API request.
+F.Intrinsic.Variable.ArgExists("Value", V.Local.bExists)
+
+F.Intrinsic.Control.If(V.Local.bExists, =, True)
+	'At the time of creation, GAB is unable to read/identify left and right double quotes, and the customer is using them, so to get around these, we encode to URL, and replace the values with those of regular double quotes, and then decode back to a regular string.
+	V.Local.sEncoding.Set(V.Args.Value)
+	F.Communication.Misc.EncodeToString(3, V.Local.sEncoding, V.Local.sEncoding)
+	F.Intrinsic.String.Replace(V.Local.sEncoding, "%93", "%22", V.Local.sEncoding)
+	F.Intrinsic.String.Replace(V.Local.sEncoding, "%94", "%22", V.Local.sEncoding)
+	F.Intrinsic.String.Replace(V.Local.sEncoding, "%B0", "degdegdeg", V.Local.sEncoding)
+	F.Intrinsic.String.Replace(V.Local.sEncoding, "%96", "longdashlongdash", V.Local.sEncoding)
+	F.Intrinsic.String.Replace(V.Local.sEncoding, "%92", "singlequotesinglequote", V.Local.sEncoding)
+	F.Intrinsic.String.Replace(V.Local.sEncoding, "%0a", V.Ambient.NewLine, V.Local.sEncoding)
+	F.Intrinsic.String.Replace(V.Local.sEncoding, "%a0", "", V.Local.sEncoding)
+	F.Intrinsic.String.Replace(V.Local.sEncoding, "%0d", "", V.Local.sEncoding)
+	F.Communication.Misc.DecodeToString(3, V.Local.sEncoding, V.Local.sDescription)
+	
+	F.Intrinsic.String.Replace(V.Local.sDescription, "\", "\\", V.local.sDescription)
+	F.Intrinsic.String.Build("\{0}", V.Ambient.DblQuote, V.Local.sEncoding)
+	F.Intrinsic.String.Replace(V.local.sDescription, V.Ambient.DblQuote, V.Local.sEncoding, V.local.sDescription)
+	F.Intrinsic.String.Replace(V.local.sDescription, V.Ambient.NewLine, "\n\r", V.Local.sDescription)
+	F.Intrinsic.String.Replace(V.local.sDescription, "degdegdeg", "\u00B0", V.Local.sDescription)
+	F.Intrinsic.String.Replace(V.Local.sDescription, "longdashlongdash", "\u2013", V.Local.sDescription)
+	F.Intrinsic.String.Replace(V.Local.sDescription, "singlequotesinglequote", "\u2019", V.Local.sDescription)
+F.Intrinsic.Control.Else
+	V.Local.sDescription.Set("")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Variable.AddRV("Return", V.Local.sDescription)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Concat("Project: GCG_5470_ARCustomerNotes.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.Endtry
+Program.Sub.SpecialCheck.End
+
+Program.Sub.KilnFields.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sPart.Declare(String, "")
+V.Local.sLoc.Declare(String, "")
+V.Local.sSql.Declare(String, "")
+V.Local.sDbzFields.Declare(String, "")
+V.Local.sAPIFields.Declare(String, "")
+V.Local.sACTFields.Declare(String, "")
+V.Local.sKilnBod.Declare(String, "")
+V.Local.sAttChk.Declare(String, "")
+V.Local.sFilter.Declare(String, "")
+V.Local.sValue.Declare(String, "")
+V.Local.sCheck.Declare(String, "")
+V.Local.sAttribute.Declare(String, "")
+V.Local.iAttID.Declare(Long, 0)
+V.Local.iDrac.Declare(Long, 0)
+
+'Added this subroutine when they decided they wanted a ton of fields added to the inventory considered kilns.
+'We are expecting the part and location for the part we are pushing to the website
+V.Local.sPart.Set(V.Args.PartNo)
+V.Local.sLoc.Set(V.Args.Loc)
+'F.Intrinsic.String.Build(", {0}attributes{0}:[", V.Ambient.DblQuote, V.Local.sKilnBod)
+F.Intrinsic.String.Build(", {0}meta_data{0}:[", V.Ambient.DblQuote, V.Local.sKilnBod)
+
+'TEsting the metadata stuff
+F.Intrinsic.String.Build(", {0}meta_data{0}:[{{0}key{0}:{0}gss_part_number{0},{0}value{0}:{0}{1}{0}}", V.Ambient.DblQuote, V.Local.sPart.Trim, V.Local.sKilnBod)
+
+'These are the fields that we are adding to the website. 
+F.Intrinsic.String.Replace("model*!*exp_desc*!*max_temp_f*!*max_temp_c*!*voltage*!*phase*!*hertz*!*amps*!*watts*!*cordset*!*controller*!*cont_overlay*!*zone*!*thermocouple*!*lid_door_switch*!*breaker_size*!*copper_wire_size*!*tuv*!*ce*!*ul*!*std_dims*!*kiln_type*!*door_type*!*sides*!*internal_area*!*refract_ins_type*!*wall_thickness*!*top_thickness*!*bottom_thickness*!*volume_cubic_feet*!*volume_litres*!*width_dia_in*!*width_dia_metric*!*depth_inches*!*depth_metric*!*height_inches*!*height_metric*!*outer_size_inches*!*outer_size_metric*!*ship_size_inches*!*ship_size_metric*!*ship_weight_kg*!*ship_weight_lbs*!*doorway_clr_in*!*doorway_clr_metric*!*ship_method*!*sba*!*element_1*!*element_1_loc*!*element_1_qty*!*element_1_vol*!*element_2*!*element_2_loc*!*element_2_qty*!*element_2_vol*!*element_3*!*element_3_loc*!*element_3_qty*!*element_3_vol*!*element_4*!*element_4_loc*!*element_4_qty*!*element_4_vol*!*element_5*!*element_5_loc*!*element_5_qty*!*element_5_vol*!*except_1*!*except_2*!*except_3*!*except_4*!*except_5*!*except_6*!*notes", "*!*", ", ", V.Local.sDbzFields)
+'F.Intrinsic.String.Build("Select TOP 1 INV_PART, LOC, Modified_dt, {0} from GCG_5289_Kiln_Addl where INV_PART = '{1}' and LOC = '{2}' order by Modified_dt desc", V.Local.sDbzFields, V.Local.sPart, V.Local.sLoc, V.Local.sSql)
+F.Intrinsic.String.Build("Select TOP 1 INV_PART, LOC, Modified_dt, {0} from GCG_5289_Kiln_Addl where INV_PART = '{1}' order by Modified_dt desc", V.Local.sDbzFields, V.Local.sPart, V.Local.sLoc, V.Local.sSql)
+
+F.Data.DataTable.CreateFromSQL("dtKilnInfo", "conx", V.Local.sSql)
+
+F.Intrinsic.Control.If(V.DataTable.dtKilnInfo.RowCount, >, 0)
+	F.Intrinsic.String.Split("model*!*max_temp_f*!*max_temp_c*!*voltage*!*phase*!*hertz*!*amps*!*watts*!*cordset*!*controller*!*zone*!*thermocouple*!*lid_door_switch*!*breaker_size*!*copper_wire_size*!*tuv*!*ce*!*kiln_type*!*door_type*!*sides*!*internal_area*!*refract_ins_type*!*wall_thickness*!*top_thickness*!*bottom_thickness*!*volume_cubic_feet*!*volume_litres*!*width_dia_in*!*width_dia_metric*!*depth_inches*!*depth_metric*!*height_inches*!*height_metric*!*outer_size_inches*!*outer_size_metric*!*ship_size_inches*!*ship_size_metric*!*ship_weight_kg*!*ship_weight_lbs*!*doorway_clr_in*!*doorway_clr_metric*!*ship_method*!*element_1*!*element_1_loc*!*element_1_qty*!*element_2*!*element_2_loc*!*element_2_qty*!*element_3*!*element_3_loc*!*element_3_qty*!*element_4*!*element_4_loc*!*element_4_qty*!*element_5*!*element_5_loc*!*element_5_qty*!*notes", "*!*", V.Local.sDbzFields)
+	
+'	F.Intrinsic.String.Split("model*!*max-temp-f*!*max-temp-c*!*voltage*!*phase*!*hertz*!*amps*!*watts*!*cordset*!*controller*!*zone*!*thermocouple*!*lid-door-switch*!*breaker-size*!*copper-wire-size*!*tuv*!*ce*!*kiln-type*!*door-type*!*sides*!*internal-area*!*refractory-insulation-type*!*wall-thickness*!*top-thickness*!*bottom-thickness*!*volume-cubic-feet*!*volume-litres*!*width-diameter-inches*!*width-diameter-metric*!*depth-inches*!*depth-metric*!*height-inches*!*height-metric*!*outer-size-inches*!*outer-size-metric*!*ship-size-inches*!*ship-size-metric*!*ship-weight-kg*!*ship-weight-lbs*!*doorway-clearance-inches*!*doorway-clearance-metric*!*ship-method*!*element-1*!*element-1-location*!*element-1-quantity*!*element-2*!*element-2-location*!*element-2-quantity*!*element-3*!*element-3-location*!*element-3-quantity*!*element-4*!*element-4-location*!*element-4-quantity*!*element-5*!*element-5-location*!*element-5-quantity*!*notes", "*!*", V.Local.sAPIFields)
+	
+	
+	F.Intrinsic.String.Split("model*!*max_temp_f*!*max_temp_c*!*voltage*!*phase*!*hertz*!*amps*!*watts*!*cordset*!*controller*!*zone*!*thermocouple*!*lid_door_switch*!*breaker_size*!*copper_wire_size*!*tuv*!*ce*!*kiln_type*!*door_type*!*sides*!*internal_area*!*refractory_insulation_type*!*wall_thickness*!*top_thickness*!*bottom_thickness*!*volume_cubic_feet*!*volume_litres*!*width_diameter_inches*!*width_diameter_metric*!*depth_inches*!*depth_metric*!*height_inches*!*height_metric*!*outer_size_inches*!*outer_size_metric*!*ship_size_inches*!*ship_size_metric*!*ship_weight_kg*!*ship_weight_lbs*!*doorway_clearance_inches*!*doorway_clearance_metric*!*ship_method*!*element_1*!*element_1_location*!*element_1_quantity*!*element_2*!*element_2_location*!*element_2_quantity*!*element_3*!*element_3_location*!*element_3_quantity*!*element_4*!*element_4_location*!*element_4_quantity*!*element_5*!*element_5_location*!*element_5_quantity*!*notes", "*!*", V.Local.sAPIFields)
+	
+'	F.Intrinsic.String.Split("Model*!*Max Temp F*!*Max Temp C*!*Voltage*!*Phase*!*Hertz*!*Amps*!*Watts*!*Cordset*!*Controller*!*Zone*!*Thermocouple*!*Lid/Door Switch*!*Breaker Size*!*Copper Wire Size*!*TUV*!*CE*!*Kiln Type*!*Door Type*!*Sides*!*Internal Area*!*Refractory Insulation Type*!*Wall Thickness*!*Top Thickness*!*Bottom Thickness*!*Volume (Cubic Feet)*!*Volume (Litres)*!*Width/Diameter (Inches)*!*Width/Diameter (Metric)*!*Depth (Inches)*!*Depth (Metric)*!*Height (Inches)*!*Height (Metric)*!*Outer Size (Inches)*!*Outer Size (Metric)*!*Ship Size (Inches)*!*Ship Size (Metric)*!*Ship Weight (Kg)*!*Ship Weight (lbs)*!*Doorway Clearance (Inches)*!*Doorway Clearance (Metric)*!*Ship Method*!*Element 1*!*Element 1 Location*!*Element 1 Quantity*!*Element 2*!*Element 2 Location*!*Element 2 Quantity*!*Element 3*!*Element 3 Location*!*Element 3 Quantity*!*Element 4*!*Element 4 Location*!*Element 4 Quantity*!*Element 5*!*Element 5 Location*!*Element 5 Quantity*!*notes", "*!*", V.Local.sACTFields)
+'	F.Intrinsic.String.Split("Model*!*Max Temp F*!*Max Temp C*!*Voltage*!*Phase*!*Hertz*!*Amps*!*Watts*!*Cordset*!*Controller*!*Zone*!*Thermocouple*!*Lid/Door Switch*!*Breaker Size*!*Copper Wire Size*!*TUV*!*CE*!*Kiln Type*!*Door Type*!*Sides*!*Internal Area*!*Refractory Insulation Type*!*Wall Thickness*!*Top Thickness*!*Bottom Thickness*!*Volume (Cubic Feet)*!*Volume (Litres)*!*Width/Diameter (Inches)*!*Width/Diameter (Metric)*!*Depth (Inches)*!*Depth (Metric)*!*Height (Inches)*!*Height (Metric)*!*Outer Size (Inches)*!*Outer Size (Metric)*!*Ship Size (Inches)*!*Ship Size (Metric)*!*Ship Weight (Kg)*!*Ship Weight (lbs)*!*Doorway Clearance (Inches)*!*Doorway Clearance (Metric)*!*Ship Method*!*Element 1*!*Element 1 Location*!*Element 1 Quantity*!*Element 2*!*Element 2 Location*!*Element 2 Quantity*!*Element 3*!*Element 3 Location*!*Element 3 Quantity*!*Element 4*!*Element 4 Location*!*Element 4 Quantity*!*Element 5*!*Element 5 Location*!*Element 5 Quantity*!*notes", "*!*", V.Local.sACTFields)
+	F.Intrinsic.Control.For(V.Local.iDrac, 0, V.Local.sAPIFields.UBound, 1)
+		V.Local.sAttribute.Set(V.Local.sAPIFields(V.Local.iDrac).Trim)
+		V.Local.sValue.Set(V.DataTable.dtKilnInfo(0).[V.Local.sDbzFields(V.Local.iDrac)]!FieldValTrim)
+		'Original code, with the extra kiln stuff added in as attributes.
+'		F.Intrinsic.Control.If(V.Local.sValue.Trim, <>, "")
+'			F.Intrinsic.Control.CallSub(SpecialCheck, "Value", V.Local.sValue)
+'			V.Local.sValue.Set(V.Args.Return)
+'			V.Local.iAttID.Set(V.Dictionary.dicAttr![V.Local.sAttribute.UCase])
+'			
+'			'The api expected format is a little weird. It requires teh ID of the Attribute, the name of the Attribute as it is on the website, and the term as the 'option'. All these are attributes of each attribute term.
+'			'ID
+'			F.Intrinsic.String.Build("{0}{{1}id{1}:{2}, ", V.Local.sKilnBod, V.Ambient.DblQuote, V.Local.iAttID, V.Local.sKilnBod)
+'			
+'			'Name
+'			F.Intrinsic.String.Build("{0}{1}name{1}:{1}{2}{1}, ", V.Local.sKilnBod, V.Ambient.DblQuote, V.Local.sACTFields(V.Local.iDrac), V.Local.sKilnBod)
+'			
+'			'Mid-Filler Stuff
+'			F.Intrinsic.String.Build("{0}{1}position{1}:1, {1}visible{1}:true, {1}variation{1}:false, ", V.Local.sKilnBod, V.Ambient.DblQuote, V.Local.sKilnBod)
+'			
+'			'Option
+'			F.Intrinsic.String.Build("{0}{1}options{1}:[{1}{2}{1}]},", V.Local.sKilnBod, V.Ambient.DblQuote, V.Local.sValue, V.Local.sKilnBod)
+'			
+'		F.Intrinsic.Control.EndIf		
+		F.Intrinsic.Control.If(V.Local.sValue.Trim, <>, "")
+			F.Intrinsic.Control.CallSub(SpecialCheck, "Value", V.Local.sValue)
+			V.Local.sValue.Set(V.Args.Return)
+'			V.Local.iAttID.Set(V.Dictionary.dicAttr![V.Local.sAttribute.UCase])
+			
+			'The api expected format is a little weird. It requires teh ID of the Attribute, the name of the Attribute as it is on the website, and the term as the 'option'. All these are attributes of each attribute term.
+			'ID
+'			F.Intrinsic.String.Build("{0}{{1}id{1}:{2}, ", V.Local.sKilnBod, V.Ambient.DblQuote, V.Local.iAttID, V.Local.sKilnBod)
+			
+			'Name
+			F.Intrinsic.String.Build("{0}, {{1}key{1}:{1}{2}{1}, ", V.Local.sKilnBod, V.Ambient.DblQuote, V.Local.sAttribute, V.Local.sKilnBod)
+			
+			'Mid-Filler Stuff
+'			F.Intrinsic.String.Build("{0}{1}position{1}:1, {1}visible{1}:true, {1}variation{1}:false, ", V.Local.sKilnBod, V.Ambient.DblQuote, V.Local.sKilnBod)
+			
+			'Option
+			F.Intrinsic.String.Build("{0}{1}value{1}:{1}{2}{1}}", V.Local.sKilnBod, V.Ambient.DblQuote, V.Local.sValue, V.Local.sKilnBod)
+			
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iDrac)
+		
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.Close("dtKilnInfo")
+
+F.Intrinsic.String.Build("{0}]", V.Local.sKilnBod, V.Local.sKilnBod)
+
+'Theoretically we should not get here and have an empty kiln body, but there is a chance that the user could somehow mess it up, so we check to see if it should be empty
+'F.Intrinsic.String.Build(", {0}attributes{0}:[***", V.Ambient.DblQuote, V.Local.sCheck)
+
+F.Intrinsic.Control.If(V.Local.sKilnBod.Trim, =, V.Local.sCheck)
+	F.Intrinsic.Variable.AddRV("KilnBody", "")
+F.Intrinsic.Control.Else
+	F.Intrinsic.Variable.AddRV("KilnBody", V.Local.sKilnBod)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Concat("Project: GCG_5470_ARCustomerNotes.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.Endtry
+Program.Sub.KilnFields.End
+
+Program.Sub.Attributes.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sURL.Declare(String, "")
+V.Local.sUser.Declare(String, "")
+V.Local.sPass.Declare(String, "")
+V.Local.sFile.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.sPath.Declare(String, "")
+V.Local.sAttID.Declare(String, "")
+V.Local.sSlug.Declare(String, "")
+V.Local.bCont.Declare(Boolean, False)
+V.Local.iDrac.Declare(Long, 1)
+
+'We gather the attribute information from the website, since we need it to be able to post the terms through the api
+F.Data.Dictionary.Create("dicAttr")
+
+V.Local.sUser.Set("fquiroz")
+'V.Local.sPass.Set("WAUdKKFz&hDwxpmu*BFZ6h&P")
+V.Local.sPass.Set("pvI!)A08uQHShGE(Se4V%9o!")
+
+V.Local.sUser.Set("gssimport")
+'V.Local.sPassword.Set("WAUdKKFz&hDwxpmu*BFZ6h&P")
+V.Local.sPass.Set("$Gl0balSh0p-Parag0n!")
+
+'V.Local.sURL.Set("https://paragon.wp4.cazbah.us/wp-json/wc/v2/products/attributes")
+
+V.Local.sURL.Set("https://dev-pishop.pantheonsite.io/wp-json/wc/v3/products/attributes")
+
+F.Intrinsic.String.Build("{0}\{1}PanThAttr.json", V.Caller.TempDir, V.Caller.CompanyCode, V.Local.sFile)
+
+F.Communication.REST.SetProperty("HTTPMethod","GET")
+F.Communication.REST.SetProperty("User",V.Local.sUser)
+F.Communication.REST.SetProperty("Password",V.Local.sPass)
+F.Communication.REST.SetProperty("ContentType", "application/json; charset=utf-8")
+F.Communication.REST.SetProperty("Accept","application/json")
+F.Communication.REST.SetProperty("LocalFile", V.Local.sFile)
+F.Communication.REST.Config("SSLEnabledProtocols=4032",V.Local.sRet)
+
+F.Intrinsic.Control.Try
+	F.Communication.REST.Get(V.Local.sURL)
+F.Intrinsic.Control.Catch
+
+F.Intrinsic.Control.EndTry
+
+F.Communication.REST.DoEvents()
+F.Communication.JSON.ParseFile(V.Local.sFile)
+
+F.Communication.JSON.HasXPath("/json/[1]",V.Local.bCont)
+
+'We are creating a dictionary that will spit out the attribute ID
+F.Intrinsic.Control.DoUntil(V.Local.bCont, =, False)
+	
+	F.intrinsic.String.Build("/json/[{0}]/id", V.Local.iDrac, V.Local.sPath)
+	F.Communication.JSON.SetProperty("XPath",V.Local.sPath)
+	F.Communication.JSON.ReadProperty("XText",V.Local.sPath)
+	F.Intrinsic.String.Replace(V.Local.sPath, V.Ambient.DblQuote, "", V.Local.sPath)
+	F.Intrinsic.String.Replace(V.Local.sPath, "\/", "/", V.Local.sAttID)
+	
+	F.intrinsic.String.Build("/json/[{0}]/slug", V.Local.iDrac, V.Local.sPath)
+	F.Communication.JSON.SetProperty("XPath",V.Local.sPath)
+	F.Communication.JSON.ReadProperty("XText",V.Local.sPath)
+	F.Intrinsic.String.Replace(V.Local.sPath, V.Ambient.DblQuote, "", V.Local.sPath)
+	F.Intrinsic.String.Replace(V.Local.sPath, "\/", "/", V.Local.sSlug)
+	
+	'For some reason, the slug has a prefix of 'PA_'. To match the info in the tables in pervasive, we remove it
+	F.Intrinsic.String.Replace(V.Local.sSlug.UCase, "PA_", "", V.Local.sSlug)
+	
+	F.Data.Dictionary.AddItem("dicAttr", V.Local.sSlug.UCase, V.Local.sAttID)
+	
+	F.Intrinsic.Math.Add(V.Local.iDrac, 1, V.Local.iDrac)
+	
+	F.Intrinsic.String.Build("/json/[{0}]", V.Local.iDrac, V.Local.sPath)
+	
+	F.Communication.JSON.HasXPath(V.Local.sPath, V.Local.bCont)
+	
+F.Intrinsic.Control.Loop
+
+F.Data.Dictionary.SetDefaultReturn("dicAttr", 0)
+
+'We dont need this datatable anymore, since we are not manually creating the attributes.
+'F.Data.DataTable.CreateFromSQL("dtAttributes", "conx", "Select Attribute, Term, Term_ID from GCG_5289_Att_Terms", True)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Concat("Project: GCG_5470_ARCustomerNotes.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.Endtry
+Program.Sub.Attributes.End
+
+Program.Sub.CreateTerm.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String, "")
+V.Local.sUser.Declare(String, "")
+V.Local.sPassword.Declare(String, "")
+V.Local.sTermBod.Declare(String, "")
+V.Local.sTemp.Declare(String, "")
+V.Local.sRet.Declare(String, "")
+V.Local.sURL.Declare(String, "")
+V.Local.sTerm.Declare(String, "")
+V.Local.sData.Declare(String, "")
+V.Local.sAttribute.Declare(String, "")
+V.Local.sBreak.Declare(String, "")
+V.Local.iAttID.Declare(Long, 0)
+V.Local.iTermID.Declare(Long, 0)
+
+'When this idea was originally thrown out, the documentation on the Woo Commerce page said that it required the creation of the term before we could add it to the attribute on an inventory.
+'This subroutine was created to do just that, however mid development, I discovered an easier method of posting/putting the attribute terms on the inventory parts on the website,
+'Thus this subroutine is no longer needed, but I will leave it in just in case we need it in the future or for a different project.
+V.Local.sUser.Set("fquiroz")
+'V.Local.sPassword.Set("WAUdKKFz&hDwxpmu*BFZ6h&P")
+V.Local.sPassword.Set("pvI!)A08uQHShGE(Se4V%9o!")
+
+V.Local.sAttribute.Set(V.Args.Attribute)
+V.Local.sTerm.Set(V.Args.Term)
+
+F.Communication.REST.SetProperty("HTTPMethod","POST")
+F.Communication.REST.SetProperty("User",V.Local.sUser)
+F.Communication.REST.SetProperty("Password",V.Local.sPassword)
+'F.Communication.REST.SetProperty("LocalFile","C:\users\fquiroz\Desktop\RestGAB.txt")
+F.Communication.REST.SetProperty("ContentType", "application/json; charset=utf-8")
+F.Communication.REST.SetProperty("Accept","application/json")
+
+F.Communication.REST.Config("SSLEnabledProtocols=4032",V.Local.sRet)
+
+F.Intrinsic.String.Build("{{0}name{0}:{0}{1}{0}}", V.Ambient.DblQuote, V.Local.sTerm, V.Local.sTermBod)
+
+F.Communication.REST.SetProperty("PostData", V.Local.sTermBod)
+
+V.Local.iAttID.Set(V.Dictionary.dicAttr![V.Local.sAttribute.UCase])
+
+F.Intrinsic.String.Build("https://paragon.wp4.cazbah.us/wp-json/wc/v2/products/attributes/{0}/terms", V.Local.iAttID, V.Local.sURL)
+'V.Local.sURL.Set("http://localhost/wordpress/wp-json/wc/v2/products")
+
+F.Intrinsic.Control.Try
+	
+'	F.Communication.REST.Post(V.Local.sURL)
+	
+	F.Communication.REST.DoEvents()
+	F.Communication.REST.ReadProperty("TransferredData", V.Local.sData)
+	
+	F.Intrinsic.String.Build("{0}id{0}:", V.Ambient.DblQuote, V.Local.sBreak)
+	F.Intrinsic.String.Split(V.Local.sData, V.Local.sBreak, V.Local.sTemp)
+	V.Local.sTemp.RedimPreserve(0,1)
+	F.Intrinsic.String.Build(",{0}name", V.Ambient.DblQuote, V.Local.sBreak)
+	F.Intrinsic.String.Split(V.Local.sTemp(1), V.Local.sBreak, V.Local.sTemp)
+	
+	V.Local.iTermID.Set(V.Local.sTemp(0).Long)
+		
+	'F.Intrinsic.Variable.AddRV()
+
+F.Intrinsic.Control.Catch
+	'This would be the error when the post failed to execute in the API.
+	
+	
+F.Intrinsic.Control.EndTry
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Concat("Project: GCG_5470_ARCustomerNotes.g2u", V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.Endtry
+Program.Sub.CreateTerm.End
+
+Program.Sub.Comments.Start
+${$5$}$2.0.0.0$}$2
+${$6$}$adsouza$}$20220921195840721$}$JX3L09Cgehg7O+lKYSb2ur8FFsJUp9u/WmgyyrTZC1SLxNBw1A5XoagNuFzSTa8r2yJECJM+Ugs=
+Program.Sub.Comments.End
